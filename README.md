@@ -38,3 +38,21 @@ flowchart TD
     B --> L["core/ - Configuration and security"]
 ```
 
+
+## Application Architecture
+
+```mermaid
+flowchart TD
+    A["User"] --> B["React Page"]
+    B --> C["Frontend Service"]
+    C -->|"HTTP Request / JSON"| D["FastAPI Route"]
+    D --> E["Pydantic Schema"]
+    E --> F["Backend Service"]
+    F --> G[("Database (if needed)")]
+    F --> H["AI Model (if needed)"]
+    G --> F
+    H --> F
+    F --> D
+    D -->|"JSON Response"| C
+    C --> B
+```
