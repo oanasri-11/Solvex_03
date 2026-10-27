@@ -20,3 +20,21 @@ flowchart TD
     C --> O["index.css - Global styles"]
 ```
 
+## Backend — FastAPI
+
+```mermaid
+flowchart TD
+    A["backend/"] --> B["app/"]
+    A --> C["tests/ - Automated tests"]
+    A --> D[".env - Secrets and settings"]
+    A --> E["requirements.txt - Dependencies"]
+
+    B --> F["main.py - FastAPI setup"]
+    B --> G["api/routes/ - HTTP endpoints"]
+    B --> H["schemas/ - Request validation"]
+    B --> I["models/ - Database tables"]
+    B --> J["services/ - Business logic"]
+    B --> K["db/ - Database connection"]
+    B --> L["core/ - Configuration and security"]
+```
+
