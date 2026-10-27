@@ -1,63 +1,55 @@
-frontend/
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── pages/
-│   ├── layouts/
-│   ├── services/
-│   ├── types/
-│   ├── hooks/
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── .env
-└── package.json
 
-
-Folder / file	What to put inside
-public/	Static files used directly, such as a favicon.
-assets/	Images, logos, fonts and illustrations.
-components/	Reusable UI elements: buttons, navbar, cards, input fields.
-pages/	Full screens: Home, Login, Dashboard, Results.
-layouts/	Shared page structure, such as a sidebar and header.
-services/	API calls to FastAPI, such as authService.ts or patientService.ts.
-types/	TypeScript interfaces for users, requests and responses.
-hooks/	Reusable React logic, e.g. useAuth.ts.
-App.tsx	Main application component and route setup.
-main.tsx	React entry point that renders the app.
-index.css	Global styles, fonts and CSS resets.
-.env	Frontend configuration, such as VITE_API_URL.
-package.json	Dependencies and commands to run the fronten
-
+flowchart TD
+    A["frontend/"] --> B["public/"]
+    B --> B1["Static files: favicon"]
+    A --> C["src/"]
+    C --> D["assets/"]
+    D --> D1["Images, logos, fonts"]
+    C --> E["components/"]
+    E --> E1["Buttons, cards, navbar"]
+    C --> F["pages/"]
+    F --> F1["Home, Login, Dashboard, Results"]
+    C --> G["layouts/"]
+    G --> G1["Shared headers and sidebars"]
+    C --> H["services/"]
+    H --> H1["API calls to FastAPI"]
+    C --> I["types/"]
+    I --> I1["TypeScript interfaces"]
+    C --> J["hooks/"]
+    J --> J1["Reusable React logic"]
+    C --> K["App.tsx"]
+    K --> K1["Routes and main app"]
+    C --> L["main.tsx"]
+    L --> L1["React entry point"]
+    C --> M["index.css"]
+    M --> M1["Global styles"]
+    A --> N[".env"]
+    N --> N1["VITE_API_URL"]
+    A --> O["package.json"]
+    O --> O1["Dependencies and scripts"]
 
 
 
 
-
-backend/
-├── app/
-│   ├── main.py
-│   ├── api/
-│   │   └── routes/
-│   ├── schemas/
-│   ├── models/
-│   ├── services/
-│   ├── db/
-│   └── core/
-├── tests/
-├── .env
-└── requirements.txt
-
-
-Folder / file	What to put inside
-main.py	Create the FastAPI app, register routes and configure CORS.
-api/routes/	API endpoints, e.g. auth.py, patients.py, analysis.py.
-schemas/	Pydantic models validating incoming requests and outgoing responses.
-models/	Database table definitions, if you use a database.
-services/	Business logic, such as appointment scheduling or medical-data processing.
-db/	Database connection, session and initialization code.
-core/	Configuration, environment settings and shared security utilities.
-tests/	Tests for important endpoints and business logic.
-.env	Backend secrets and configuration; never commit this file.
-requirements.txt	Python dependencies needed to run the backend.
+flowchart TD
+    A["backend/"] --> B["app/"]
+    A --> T["tests/"]
+    T --> T1["Endpoint and logic tests"]
+    A --> U[".env"]
+    U --> U1["Secrets and configuration"]
+    A --> V["requirements.txt"]
+    V --> V1["Python dependencies"]
+    B --> C["main.py"]
+    C --> C1["FastAPI app, routes, CORS"]
+    B --> D["api/routes/"]
+    D --> D1["HTTP endpoints"]
+    B --> E["schemas/"]
+    E --> E1["Pydantic validation"]
+    B --> F["models/"]
+    F --> F1["Database table definitions"]
+    B --> G["services/"]
+    G --> G1["Business logic and AI processing"]
+    B --> H["db/"]
+    H --> H1["Database connection and sessions"]
+    B --> I["core/"]
+    I --> I1["Settings and security utilities"]
