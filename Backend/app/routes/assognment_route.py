@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 from typing import List, Optional
 
@@ -257,3 +258,8 @@ def end_assignment_route(
 
 
 
+=======
+"""Assignment route alias."""
+from app.routes.assignment_route import router
+__all__ = ["router"]
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

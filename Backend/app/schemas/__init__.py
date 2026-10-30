@@ -6,6 +6,25 @@ from app.schemas.auth import (
     RefreshTokenRequest,
     Token,
     TokenPayload,
+<<<<<<< HEAD
+=======
+    RegisterRequest,
+    RegisterResponse,
+    LogoutRequest,
+    LogoutResponse,
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
+    VerifyEmailRequest,
+    VerifyEmailResponse,
+    ResendVerificationRequest,
+    ResendVerificationResponse,
+    VerifyPhoneRequest,
+    VerifyPhoneResponse,
+    ResendPhoneCodeRequest,
+    ResendPhoneCodeResponse,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.common import (
     ErrorResponse,
@@ -19,6 +38,12 @@ from app.schemas.alert import (
     AlertCreate,
     AlertOut,
     AlertUpdate,
+<<<<<<< HEAD
+=======
+    AlertAcknowledgeRequest,
+    AlertPatientAcknowledgeRequest,
+    AlertCloseRequest,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.alertreading import (
     AlertReadingBase,
@@ -61,6 +86,10 @@ from app.schemas.doctor import (
     DoctorProfileCreate,
     DoctorProfileOut,
     DoctorProfileUpdate,
+<<<<<<< HEAD
+=======
+    DoctorNotificationPreferencesUpdate,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.follow_up import (
     FollowUpActionBase,
@@ -79,6 +108,11 @@ from app.schemas.measurement import (
     BloodPressureReadingCreate,
     BloodPressureReadingOut,
     BloodPressureReadingUpdate,
+<<<<<<< HEAD
+=======
+    ReadingConfirmRequest,
+    ReadingAnnotateRequest,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.monitoring_mode import (
     PatientMonitoringModeBase,
@@ -97,6 +131,12 @@ from app.schemas.patient import (
     PatientProfileCreate,
     PatientProfileOut,
     PatientProfileUpdate,
+<<<<<<< HEAD
+=======
+    PatientEnrolRequest,
+    PatientSelfUpdate,
+    PatientTargetUpdate,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.priority import (
     PriorityAssessmentBase,
@@ -121,12 +161,17 @@ from app.schemas.schedule_slot import (
     ScheduleSlotCreate,
     ScheduleSlotOut,
     ScheduleSlotUpdate,
+<<<<<<< HEAD
+=======
+    SlotConfirmRequest,
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.schemas.user import (
     UserBase,
     UserCreate,
     UserOut,
     UserUpdate,
+<<<<<<< HEAD
 )
 
 __all__ = [
@@ -217,3 +262,69 @@ __all__ = [
     "UserOut",
     "UserUpdate",
 ]
+=======
+    UserPreferencesUpdate,
+    UserMeResponse,
+    UserListItem,
+)
+
+# v3 Schemas
+from app.schemas.caregiver import (
+    CaregiverInvitationRequest,
+    CaregiverInvitationResponse,
+    CaregiverLinkOut,
+)
+from app.schemas.consent import (
+    ConsentCreate,
+    ConsentAdminCreate,
+    ConsentOut,
+    ConsentTextOut,
+    ConsentStateOut,
+)
+from app.schemas.coverage import (
+    CoverageTargetCreate,
+    CoverageTargetUpdate,
+    CoverageTargetOut,
+)
+from app.schemas.device import (
+    ConnectedDeviceCreate,
+    ConnectedDeviceOut,
+    InboundSMSWebhook,
+    DeviceBatchSyncRequest,
+)
+from app.schemas.office_reading import (
+    OfficeReadingCreate,
+    OfficeReadingOut,
+)
+from app.schemas.reminder import (
+    ReminderPreferenceUpdate,
+    ReminderPreferenceOut,
+    PushTokenRequest,
+    ReminderSlotOut,
+)
+from app.schemas.treatment_event import (
+    TreatmentEventCreate,
+    TreatmentEventCorrect,
+    TreatmentEventOut,
+    CurrentMedicationsOut,
+)
+from app.schemas.mode_change_request import (
+    ModeChangeRequestCreate,
+    ModeChangeResolveRequest,
+    ModeChangeRequestOut,
+)
+from app.schemas.report import (
+    ReportExportRequest,
+    ReportExportOut,
+    ReportPreviewOut,
+)
+from app.schemas.ai import (
+    AISummaryResponse,
+    AIAlertExplanationResponse,
+)
+from app.schemas.config import (
+    PatientContentResponse,
+    LabelsResponse,
+    FeaturesResponse,
+)
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

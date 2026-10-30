@@ -10,18 +10,42 @@ from app.models.BloodPressureReading import BloodPressureReading  # noqa: F401
 from app.models.CaseReview import CaseReview  # noqa: F401
 from app.models.ContactRequest import ContactRequest  # noqa: F401
 from app.models.DoctorPatientAssignment import DoctorPatientAssignment  # noqa: F401
+<<<<<<< HEAD
 from app.models.DoctorProfile import DoctorProfile  # noqa: F401
+=======
+from app.models.doctorprofile import DoctorProfile  # noqa: F401
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 from app.models.FollowUpAction import FollowUpAction  # noqa: F401
 from app.models.MeasurementSchedule import MeasurementSchedule  # noqa: F401
 from app.models.Notification import Notification  # noqa: F401
 from app.models.PatientCondition import PatientCondition  # noqa: F401
 from app.models.PatientHelpRequest import PatientHelpRequest  # noqa: F401
 from app.models.PatientMonitoringMode import PatientMonitoringMode  # noqa: F401
+<<<<<<< HEAD
 from app.models.PatientProfile import PatientProfile  # noqa: F401
 from app.models.PriorityAssessment import PriorityAssessment  # noqa: F401
 from app.models.RuleVersion import RuleVersion  # noqa: F401
 from app.models.ScheduleSlot import ScheduleSlot  # noqa: F401
 from app.models.User import User  # noqa: F401
+=======
+from app.models.patientprofile import PatientProfile  # noqa: F401
+from app.models.PriorityAssessment import PriorityAssessment  # noqa: F401
+from app.models.RevokedToken import RevokedToken  # noqa: F401
+from app.models.RuleVersion import RuleVersion  # noqa: F401
+from app.models.ScheduleSlot import ScheduleSlot  # noqa: F401
+from app.models.user import User  # noqa: F401
+
+# v3 Models
+from app.models.Consent import Consent  # noqa: F401
+from app.models.CaregiverLink import CaregiverLink  # noqa: F401
+from app.models.TreatmentEvent import TreatmentEvent  # noqa: F401
+from app.models.OfficeReading import OfficeReading  # noqa: F401
+from app.models.CoverageTarget import CoverageTarget  # noqa: F401
+from app.models.ReminderPreference import ReminderPreference  # noqa: F401
+from app.models.ConnectedDevice import ConnectedDevice  # noqa: F401
+from app.models.ModeChangeRequest import ModeChangeRequest  # noqa: F401
+from app.models.TargetRecord import TargetRecord  # noqa: F401
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 __all__ = [
     "Alert",
@@ -43,4 +67,17 @@ __all__ = [
     "RuleVersion",
     "ScheduleSlot",
     "User",
+<<<<<<< HEAD
+=======
+    "RevokedToken",
+    "Consent",
+    "CaregiverLink",
+    "TreatmentEvent",
+    "OfficeReading",
+    "CoverageTarget",
+    "ReminderPreference",
+    "ConnectedDevice",
+    "ModeChangeRequest",
+    "TargetRecord",
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 ]

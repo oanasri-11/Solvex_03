@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """Case review routes.
 
 Route -> Service Layer -> CRUD (SQLAlchemy) -> Database.
@@ -154,3 +155,10 @@ def update_case_review_route(
         )
     return updated
 
+=======
+"""CaseReview API routes (Section 16 alias)."""
+
+from app.routes.review_route import router
+
+__all__ = ["router"]
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

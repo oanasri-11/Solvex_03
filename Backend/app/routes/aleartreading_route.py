@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 from typing import List, Optional
 
@@ -81,3 +82,8 @@ def get_all_alert_readings_route(
         alert_id=alert_id,
         reading_id=reading_id
     )
+=======
+"""AlertReading route alias."""
+from app.routes.alert_route import router
+__all__ = ["router"]
+>>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
