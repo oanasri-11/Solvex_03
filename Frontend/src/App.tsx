@@ -1,43 +1,43 @@
-import React from 'react';
-import { AppProvider, useApp } from './context/AppContext';
-import { DevNavBar } from './components/common/DevNavBar';
-import { DoctorLayout } from './components/layout/DoctorLayout';
-import { PatientLayout } from './components/layout/PatientLayout';
+import React from "react";
+import { AppProvider, useApp } from "./context/AppContext";
+import { DevNavBar } from "./components/common/DevNavBar";
+import { DoctorLayout } from "./components/layout/DoctorLayout";
+import { PatientLayout } from "./components/layout/PatientLayout";
 
 // Doctor Views
-import { DoctorDashboard } from './components/doctor/DoctorDashboard';
-import { DoctorPatients } from './components/doctor/DoctorPatients';
-import { DoctorAlerts } from './components/doctor/DoctorAlerts';
-import { DoctorPatientDetail } from './components/doctor/DoctorPatientDetail';
-import { DoctorPatientReview } from './components/doctor/DoctorPatientReview';
+import { DoctorDashboard } from "./components/doctor/DoctorDashboard";
+import { DoctorPatients } from "./components/doctor/DoctorPatients";
+import { DoctorAlerts } from "./components/doctor/DoctorAlerts";
+import { DoctorPatientDetail } from "./components/doctor/DoctorPatientDetail";
+import { DoctorPatientReview } from "./components/doctor/DoctorPatientReview";
 
 // Patient Views
-import { PatientHome } from './components/patient/PatientHome';
-import { PatientRecordReading } from './components/patient/PatientRecordReading';
-import { PatientHistoryTrends } from './components/patient/PatientHistoryTrends';
-import { PatientAlertsActions } from './components/patient/PatientAlertsActions';
-import { PatientAlertDetail } from './components/patient/PatientAlertDetail';
-import { PatientSettings } from './components/patient/PatientSettings';
+import { PatientHome } from "./components/patient/PatientHome";
+import { PatientRecordReading } from "./components/patient/PatientRecordReading";
+import { PatientHistoryTrends } from "./components/patient/PatientHistoryTrends";
+import { PatientAlertsActions } from "./components/patient/PatientAlertsActions";
+import { PatientAlertDetail } from "./components/patient/PatientAlertDetail";
+import { PatientSettings } from "./components/patient/PatientSettings";
 
 // Auth Views
-import { SplashScreen } from './components/auth/SplashScreen';
-import { LoginScreen } from './components/auth/LoginScreen';
-import { SignUpDoctorScreen } from './components/auth/SignUpDoctorScreen';
-import { SignUpPatientScreen } from './components/auth/SignUpPatientScreen';
+import { SplashScreen } from "./components/auth/SplashScreen";
+import { LoginScreen } from "./components/auth/LoginScreen";
+import { SignUpDoctorScreen } from "./components/auth/SignUpDoctorScreen";
+import { SignUpPatientScreen } from "./components/auth/SignUpPatientScreen";
 
 const MainRouter: React.FC = () => {
   const { appView, authView, doctorView, patientView } = useApp();
 
   // Auth & Splash Mode
-  if (appView === 'auth') {
+  if (appView === "auth") {
     switch (authView) {
-      case 'splash':
+      case "splash":
         return <SplashScreen />;
-      case 'login':
+      case "login":
         return <LoginScreen />;
-      case 'signup_doctor':
+      case "signup_doctor":
         return <SignUpDoctorScreen />;
-      case 'signup_patient':
+      case "signup_patient":
         return <SignUpPatientScreen />;
       default:
         return <LoginScreen />;
@@ -45,28 +45,28 @@ const MainRouter: React.FC = () => {
   }
 
   // Doctor Workspace Portal
-  if (appView === 'doctor') {
+  if (appView === "doctor") {
     return (
       <DoctorLayout>
-        {doctorView === 'home' && <DoctorDashboard />}
-        {doctorView === 'patients' && <DoctorPatients />}
-        {doctorView === 'alerts' && <DoctorAlerts />}
-        {doctorView === 'patient_detail' && <DoctorPatientDetail />}
-        {doctorView === 'patient_review' && <DoctorPatientReview />}
+        {doctorView === "home" && <DoctorDashboard />}
+        {doctorView === "patients" && <DoctorPatients />}
+        {doctorView === "alerts" && <DoctorAlerts />}
+        {doctorView === "patient_detail" && <DoctorPatientDetail />}
+        {doctorView === "patient_review" && <DoctorPatientReview />}
       </DoctorLayout>
     );
   }
 
   // Patient Workspace Portal
-  if (appView === 'patient') {
+  if (appView === "patient") {
     return (
       <PatientLayout>
-        {patientView === 'home' && <PatientHome />}
-        {patientView === 'tracking' && <PatientRecordReading />}
-        {patientView === 'history' && <PatientHistoryTrends />}
-        {patientView === 'alerts' && <PatientAlertsActions />}
-        {patientView === 'alert_detail' && <PatientAlertDetail />}
-        {patientView === 'settings' && <PatientSettings />}
+        {patientView === "home" && <PatientHome />}
+        {patientView === "tracking" && <PatientRecordReading />}
+        {patientView === "history" && <PatientHistoryTrends />}
+        {patientView === "alerts" && <PatientAlertsActions />}
+        {patientView === "alert_detail" && <PatientAlertDetail />}
+        {patientView === "settings" && <PatientSettings />}
       </PatientLayout>
     );
   }
@@ -79,8 +79,8 @@ export function App() {
     <AppProvider>
       <div className="min-h-screen flex flex-col font-sans antialiased text-slate-900 bg-[#f8fafc]">
         {/* Navigation & Showcase Bar */}
-        <DevNavBar />
-        
+        {/* <DevNavBar /> */}
+
         {/* App Main Body */}
         <div className="flex-1">
           <MainRouter />
