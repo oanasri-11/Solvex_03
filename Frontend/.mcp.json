@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "figma-code-context": {
+      "command": "npx",
+      "args": [
+        "figma-code-context"
+      ],
+      "env": {
+        "FIGMA_TOKEN": "${FIGMA_TOKEN}"
+      }
+    }
+  }
+}
