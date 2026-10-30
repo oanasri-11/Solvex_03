@@ -68,10 +68,10 @@ def authenticate_user(
     if not verify_password(login_data.password, user.password_hash):
         return None
 
-    if not user.is_active:
+    if not user.is_active:# type: ignore
         return None
 
-    if not user.is_verified:
+    if not user.is_verified:# type: ignore
         return None
 
     return user
@@ -121,7 +121,7 @@ def refresh_access_token(
 
     user = get_user_by_id(db, int(user_id))
 
-    if not user or not user.is_active or not user.is_verified:
+    if not user or not user.is_active or not user.is_verified:# type: ignore
         return None
 
     token_data = {
