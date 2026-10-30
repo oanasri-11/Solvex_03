@@ -1,8 +1,8 @@
-# Solvex 3.0 — Technical Solution Documentation
+# RAWDH (روض) — Technical Solution Documentation
 
 ## 1. Executive Summary & Architecture Overview
 
-**Solvex 3.0** is an enterprise-grade digital health and remote telemonitoring platform engineered for hypertension surveillance, cardiovascular risk stratification, and bidirectional clinical collaboration. The platform automates blood pressure ingestion, intelligent multi-tier clinical alert generation, dynamic patient priority queuing, protocol-based measurement schedules, and medication treatment event tracking.
+**RAWDH (روض)** is an enterprise-grade digital health and remote telemonitoring platform engineered for hypertension surveillance, cardiovascular risk stratification, and bidirectional clinical collaboration. The platform automates blood pressure ingestion, intelligent multi-tier clinical alert generation, dynamic patient priority queuing, protocol-based measurement schedules, and medication treatment event tracking.
 
 ### System Architecture Flow
 
