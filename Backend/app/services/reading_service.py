@@ -1,57 +1,3 @@
-<<<<<<< HEAD
-
-
-from datetime import datetime
-from typing import Optional
-
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
-
-from app.models.BloodPressureReading import BloodPressureReading
-from app.models.patientprofile import PatientProfile
-from app.schemas.measurement import (
-    BloodPressureReadingCreate,
-    BloodPressureReadingUpdate,
-    BloodPressureReadingOut,
-)
-
-
-def create_blood_pressure_reading(
-    db: Session, reading_in: BloodPressureReadingCreate
-) -> Optional[BloodPressureReading]:
-    """Save a new blood pressure reading. Verifies the patient exists."""
-    try:
-        patient = (
-            db.query(PatientProfile).filter(PatientProfile.id == reading_in.patient_id).first()
-        )
-        if not patient:
-            return None
-        measured_at = getattr(reading_in, "measured_at", None) or datetime.utcnow()
-        db_reading = BloodPressureReading(
-            patient_id=reading_in.patient_id,
-            systolic=reading_in.systolic,
-            diastolic=reading_in.diastolic,
-            measured_at=measured_at,
-            recheck_of_reading_id=getattr(reading_in, "recheck_of_reading_id", None),
-            notes=getattr(reading_in, "notes", None),
-        )
-        db.add(db_reading)
-        db.commit()
-        db.refresh(db_reading)
-        return db_reading
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
-
-def get_blood_pressure_reading_by_id(
-    db: Session, reading_id: int
-) -> Optional[BloodPressureReading]:
-    """Retrieve a reading by its primary key."""
-    return (
-        db.query(BloodPressureReading).filter(BloodPressureReading.id == reading_id).first()
-    )
-=======
 """Blood pressure reading service implementing Ingestion Pipeline & Data Quality Service (v3).
 
 Covers:
@@ -555,7 +501,6 @@ def get_doctor_trends(db: Session, patient_id: int, range_param: str = "30d", ti
 def get_blood_pressure_reading_by_id(db: Session, reading_id: int) -> Optional[BloodPressureReading]:
     """Retrieve reading by ID."""
     return db.query(BloodPressureReading).filter(BloodPressureReading.id == reading_id).first()
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 
 def get_all_blood_pressure_readings(
@@ -563,15 +508,6 @@ def get_all_blood_pressure_readings(
     skip: int = 0,
     limit: int = 100,
     patient_id: Optional[int] = None,
-<<<<<<< HEAD
-):
-    """List readings, newest first, optionally filtered by patient."""
-    query = db.query(BloodPressureReading)
-    if patient_id is not None:
-        query = query.filter(BloodPressureReading.patient_id == patient_id)
-    return query.order_by(BloodPressureReading.created_at.desc()).offset(skip).limit(limit).all()
-
-=======
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
     verification_status: Optional[str] = None,
@@ -587,4 +523,3 @@ def get_all_blood_pressure_readings(
     if verification_status:
         query = query.filter(BloodPressureReading.verification_status == verification_status)
     return query.order_by(BloodPressureReading.measured_at.desc()).offset(skip).limit(limit).all()
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

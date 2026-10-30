@@ -1,13 +1,8 @@
 """Pydantic schemas for authentication and tokens."""
 
-<<<<<<< HEAD
-from typing import Optional
-from pydantic import BaseModel, EmailStr
-=======
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 
 class Token(BaseModel):
@@ -40,8 +35,6 @@ class PasswordChangeRequest(BaseModel):
     old_password: str
     new_password: str
 
-<<<<<<< HEAD
-=======
 
 # --- Registration ---
 
@@ -149,4 +142,3 @@ class ResendPhoneCodeResponse(BaseModel):
     """Resend phone code response."""
     message: str
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

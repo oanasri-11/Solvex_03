@@ -6,7 +6,7 @@ import uuid
 from pathlib import Path
 
 # Setup paths
-backend_dir = Path(__file__).resolve().parent.parent.parent.parent.parent.parent / "Documents" / "abdo" / "Backend"
+backend_dir = Path(__file__).resolve().parent
 sys.path.insert(0, str(backend_dir))
 
 from fastapi.testclient import TestClient

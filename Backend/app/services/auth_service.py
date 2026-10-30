@@ -1,25 +1,16 @@
 from datetime import datetime, timedelta, timezone
-<<<<<<< HEAD
-from typing import Optional
-=======
 from typing import Optional, cast
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-<<<<<<< HEAD
-=======
 from app.models.RevokedToken import RevokedToken
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 from app.schemas.auth import (
     LoginRequest,
     Token,
     TokenPayload,
     RefreshTokenRequest,
     PasswordChangeRequest,
-<<<<<<< HEAD
-=======
     RegisterRequest,
     LogoutRequest,
     ForgotPasswordRequest,
@@ -28,7 +19,6 @@ from app.schemas.auth import (
     ResendVerificationRequest,
     VerifyPhoneRequest,
     ResendPhoneCodeRequest,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 from app.core.security import (
     hash_password,
@@ -36,12 +26,9 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,
-<<<<<<< HEAD
-=======
     get_token_jti,
     is_token_revoked,
     revoke_token,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 )
 
 
@@ -55,20 +42,6 @@ def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
     return db.query(User).filter(User.id == user_id).first()
 
 
-<<<<<<< HEAD
-# 3. Register user
-def register_user(db: Session, user_data) -> User:
-    existing_user = get_user_by_email(db, user_data.email)
-
-    if existing_user:
-        raise ValueError("Email already registered")
-
-    user = User(
-        full_name=user_data.full_name,
-        email=user_data.email,
-        password_hash=hash_password(user_data.password),
-        is_verified=False,
-=======
 # 3. Get user by phone
 def get_user_by_phone(db: Session, phone: str) -> Optional[User]:
     return db.query(User).filter(User.phone == phone).first()
@@ -93,7 +66,6 @@ def register_user(db: Session, user_data: RegisterRequest) -> User:
         role=user_data.role,
         email_verified=False,
         phone_verified=False,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     )
 
     try:
@@ -106,11 +78,7 @@ def register_user(db: Session, user_data: RegisterRequest) -> User:
         raise
 
 
-<<<<<<< HEAD
-# 4. Authenticate user
-=======
 # 5. Authenticate user
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def authenticate_user(
     db: Session,
     login_data: LoginRequest
@@ -121,30 +89,16 @@ def authenticate_user(
     if not user:
         return None
 
-<<<<<<< HEAD
-    if not verify_password(login_data.password, user.password_hash):
-        return None
-
-    if not user.is_active:# type: ignore
-        return None
-
-    if not user.is_verified:# type: ignore
-=======
     if not verify_password(login_data.password, cast(str, user.hashed_password)):
         return None
 
     if not cast(bool, user.is_active):
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         return None
 
     return user
 
 
-<<<<<<< HEAD
-# 5. Login and generate JWT tokens
-=======
 # 6. Login and generate JWT tokens
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def login_user(
     db: Session,
     login_data: LoginRequest
@@ -157,12 +111,8 @@ def login_user(
 
     token_data = {
         "sub": str(user.id),
-<<<<<<< HEAD
-        "role": user.role,
-=======
         "role": str(user.role),
         "email": str(user.email),
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     }
 
     access_token = create_access_token(token_data)
@@ -175,11 +125,7 @@ def login_user(
     )
 
 
-<<<<<<< HEAD
-# 6. Refresh access token
-=======
 # 7. Refresh access token
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def refresh_access_token(
     db: Session,
     refresh_data: RefreshTokenRequest
@@ -190,13 +136,10 @@ def refresh_access_token(
     if not payload or payload.get("type") != "refresh":
         return None
 
-<<<<<<< HEAD
-=======
     jti = payload.get("jti")
     if jti and is_token_revoked(db, jti):
         return None
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     user_id = payload.get("sub")
 
     if not user_id:
@@ -204,21 +147,13 @@ def refresh_access_token(
 
     user = get_user_by_id(db, int(user_id))
 
-<<<<<<< HEAD
-    if not user or not user.is_active or not user.is_verified:# type: ignore
-=======
     if not user or not cast(bool, user.is_active):
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         return None
 
     token_data = {
         "sub": str(user.id),
-<<<<<<< HEAD
-        "role": user.role,
-=======
         "role": str(user.role),
         "email": str(user.email),
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     }
 
     return Token(
@@ -228,9 +163,6 @@ def refresh_access_token(
     )
 
 
-<<<<<<< HEAD
-# 7. Change password
-=======
 # 8. Logout - revoke refresh token
 def logout_user(
     db: Session,
@@ -257,7 +189,6 @@ def logout_user(
 
 
 # 9. Change password
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def change_password(
     db: Session,
     user: User,
@@ -266,19 +197,11 @@ def change_password(
 
     if not verify_password(
         password_data.old_password,
-<<<<<<< HEAD
-        user.password_hash
-    ):
-        return False
-
-    user.password_hash = hash_password(password_data.new_password)
-=======
         cast(str, user.hashed_password)
     ):
         return False
 
     setattr(user, "hashed_password", hash_password(password_data.new_password))
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
     try:
         db.commit()
@@ -286,9 +209,6 @@ def change_password(
         return True
     except Exception:
         db.rollback()
-<<<<<<< HEAD
-        raise
-=======
         raise
 
 
@@ -369,4 +289,3 @@ def resend_phone_code(
         return False
     # In production, send SMS with one-time code here
     return True
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

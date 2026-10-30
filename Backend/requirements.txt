@@ -1,16 +1,6 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-fastapi[standard]
-=======
-sqlalchemy>=2.0.0
-pydantic>=2.0.0
-fastapi>=0.162.0
->>>>>>> b7397647a47a8c838f3a98f67bbdf59703635578
-=======
 fastapi>=0.162.0
 fastapi[standard]
 sqlalchemy>=2.0.0
 pydantic>=2.0.0
 python-jose[cryptography]
 passlib[bcrypt]
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

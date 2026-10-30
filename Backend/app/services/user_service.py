@@ -15,11 +15,6 @@ def create_user(db: Session, user_in: UserCreate) -> User:
         is_active = getattr(user_in, "is_active", True)
         if is_active is None:
             is_active = True
-<<<<<<< HEAD
-        is_verified = getattr(user_in, "is_verified", False)
-        if is_verified is None:
-            is_verified = False
-=======
         email_verified = getattr(user_in, "email_verified", False)
         if email_verified is None:
             email_verified = False
@@ -31,22 +26,15 @@ def create_user(db: Session, user_in: UserCreate) -> User:
         text_size = getattr(user_in, "text_size", 100)
         theme = getattr(user_in, "theme", "light")
         high_contrast = getattr(user_in, "high_contrast", False)
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         hashed_password = getattr(user_in, "hashed_password", None) or getattr(user_in, "password", "")
 
         db_user = User(
             email=user_in.email,
-<<<<<<< HEAD
-=======
             phone=getattr(user_in, "phone", None),
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
             hashed_password=hashed_password,
             full_name=user_in.full_name,
             role=user_in.role,
             is_active=is_active,
-<<<<<<< HEAD
-            is_verified=is_verified,
-=======
             email_verified=email_verified,
             phone_verified=phone_verified,
             locale=locale,
@@ -54,7 +42,6 @@ def create_user(db: Session, user_in: UserCreate) -> User:
             text_size=text_size,
             theme=theme,
             high_contrast=high_contrast,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         )
         db.add(db_user)
         db.commit()
@@ -75,14 +62,11 @@ def get_user_by_email(db: Session, email: str) -> Optional[User]:
     return db.query(User).filter(User.email == email).first()
 
 
-<<<<<<< HEAD
-=======
 def get_user_by_phone(db: Session, phone: str) -> Optional[User]:
     """Retrieve a user by phone number."""
     return db.query(User).filter(User.phone == phone).first()
 
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def get_all_users(
     db: Session,
     skip: int = 0,
@@ -119,24 +103,16 @@ def update_user(db: Session, user_id: int, user_in: UserUpdate) -> Optional[User
         raise
 
 
-<<<<<<< HEAD
-def deactivate_user(db: Session, user_id: int) -> Optional[User]:
-    """Soft deactivate a user (is_active = False). All data is kept."""
-=======
 def update_preferences(
     db: Session,
     user_id: int,
     prefs_in,
 ) -> Optional[User]:
     """Update user preferences (locale, timezone, text_size, theme, high_contrast, phone)."""
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     try:
         db_user = get_user_by_id(db, user_id)
         if not db_user:
             return None
-<<<<<<< HEAD
-        db_user.is_active = False# type: ignore
-=======
         update_data = prefs_in.model_dump(exclude_unset=True)
         # Resetting phone also resets phone_verified
         if "phone" in update_data:
@@ -160,7 +136,6 @@ def deactivate_user(db: Session, user_id: int) -> Optional[User]:
         if not db_user:
             return None
         db_user.is_active = False
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         db.add(db_user)
         db.commit()
         db.refresh(db_user)

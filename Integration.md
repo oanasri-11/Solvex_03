@@ -1198,5 +1198,4 @@ An autonomous agent can consider the integration **100% COMPLETE** only when all
    - *Decision:* The "Continuous Tracking" UI in `PatientRecordReading` and simulated signal tests in `PatientSettings` are simulated telemetry streams on the client side. Real manual submissions route directly to `POST /api/v1/readings`.
 
 ---
-*End of Integration Specification (`Integration.md`). Autonomous agents may proceed directly to implementation following the phases in Section 13.*
-
+*End of Integration Specification (`Integration.md`). Autonomous agents may proceed directly to implementation following the phases in Section 13.

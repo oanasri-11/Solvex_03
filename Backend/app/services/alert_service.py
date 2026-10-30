@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-
-
-from datetime import datetime
-from typing import Optional
-
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
-
-from app.models.Alert import Alert
-from app.models.PatientProfile import PatientProfile# type: ignore
-from app.schemas.alert import AlertCreate, AlertUpdate, AlertOut
-
-
-def create_alert(db: Session, alert_in: AlertCreate) -> Optional[Alert]:
-    """Backend-only creation of an alert record. Verifies the patient exists."""
-=======
 """Alert service managing clinical alert generation, acknowledgment (SC3), and evidence packets."""
 
 from datetime import datetime, timezone
@@ -33,31 +16,22 @@ from app.schemas.alert import AlertCreate, AlertUpdate
 
 def create_alert(db: Session, alert_in: AlertCreate) -> Optional[Alert]:
     """Backend-only creation of an alert record."""
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     try:
         patient = (
             db.query(PatientProfile).filter(PatientProfile.id == alert_in.patient_id).first()
         )
         if not patient:
             return None
-<<<<<<< HEAD
-        status = getattr(alert_in, "status", None) or "new"
-=======
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
         db_alert = Alert(
             patient_id=alert_in.patient_id,
             alert_type=alert_in.alert_type,
             severity=alert_in.severity,
-<<<<<<< HEAD
-            status=status,
-=======
             tier=getattr(alert_in, "tier", "routine_out_of_range") or "routine_out_of_range",
             trigger_type=getattr(alert_in, "trigger_type", "single_reading") or "single_reading",
             status=getattr(alert_in, "status", "new") or "new",
             lifecycle=getattr(alert_in, "lifecycle", "raised") or "raised",
             rule_version_id=getattr(alert_in, "rule_version_id", None),
             justification=getattr(alert_in, "justification", None),
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
             message=getattr(alert_in, "message", None),
         )
         db.add(db_alert)
@@ -81,83 +55,13 @@ def get_all_alerts(
     patient_id: Optional[int] = None,
     lifecycle: Optional[str] = None,
     severity_level: Optional[str] = None,
-<<<<<<< HEAD
-):
-    """List alerts with optional patient_id / lifecycle / severity filters."""
-=======
     tier: Optional[str] = None,
 ) -> List[Alert]:
     """List alerts with optional filters."""
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     query = db.query(Alert)
     if patient_id is not None:
         query = query.filter(Alert.patient_id == patient_id)
     if lifecycle is not None:
-<<<<<<< HEAD
-        query = query.filter(Alert.status == lifecycle)
-    if severity_level is not None:
-        query = query.filter(Alert.severity == severity_level)
-    return query.order_by(Alert.created_at.desc()).offset(skip).limit(limit).all()
-
-
-def update_alert(db: Session, alert_id: int, alert_in: AlertUpdate) -> Optional[Alert]:
-    """Update an alert (used for acknowledge / close lifecycle transitions)."""
-    try:
-        db_alert = get_alert_by_id(db, alert_id)
-        if not db_alert:
-            return None
-        update_data = alert_in.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(db_alert, field, value)
-        db.add(db_alert)
-        db.commit()
-        db.refresh(db_alert)
-        return db_alert
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
-
-def acknowledge_alert(db: Session, alert_id: int, acknowledged_by: int) -> Optional[Alert]:
-    """Acknowledge an alert (lifecycle moves forward)."""
-    try:
-        db_alert = get_alert_by_id(db, alert_id)
-        if not db_alert:
-            return None
-        if db_alert.status not in ("raised", "delivered", "new", "open"):
-            return None
-        db_alert.status = "acknowledged"# type: ignore
-        db_alert.acknowledged_at = datetime.utcnow()# type: ignore
-        db.add(db_alert)
-        db.commit()
-        db.refresh(db_alert)
-        return db_alert
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
-
-def close_alert(db: Session, alert_id: int, closed_by: int) -> Optional[Alert]:
-    """Close an alert (lifecycle moves forward)."""
-    try:
-        db_alert = get_alert_by_id(db, alert_id)
-        if not db_alert:
-            return None
-        if db_alert.status not in ("raised", "delivered", "acknowledged", "new", "open"):
-            return None
-        db_alert.status = "closed"# type: ignore
-        db_alert.resolved_at = datetime.utcnow()# type: ignore
-        db.add(db_alert)
-        db.commit()
-        db.refresh(db_alert)
-        return db_alert
-    except SQLAlchemyError:
-        db.rollback()
-        raise
-
-
-# Note: delete is intentionally omitted. Alerts are never deleted per the specification.
-=======
         query = query.filter(Alert.lifecycle == lifecycle)
     if severity_level is not None:
         query = query.filter(Alert.severity == severity_level)
@@ -308,4 +212,3 @@ def update_alert(db: Session, alert_id: int, alert_in: AlertUpdate) -> Optional[
     db.commit()
     db.refresh(alert)
     return alert
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

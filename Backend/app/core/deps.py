@@ -1,24 +1,16 @@
 """Authentication and authorization dependencies for FastAPI routes."""
 
 from typing import Optional
-<<<<<<< HEAD
-from fastapi import Depends, HTTPException, status
-=======
 from fastapi import Depends, HTTPException, Header, status
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.security import decode_token
-<<<<<<< HEAD
-from app.models.User import User
-=======
 from app.models.user import User
 from app.models.patientprofile import PatientProfile
 from app.models.CaregiverLink import CaregiverLink
 from app.models.Consent import Consent
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 from app.services.assignment_service import is_doctor_assigned
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
@@ -70,8 +62,6 @@ def get_current_active_user(
     return current_user
 
 
-<<<<<<< HEAD
-=======
 def get_current_user_any(
     current_user: User = Depends(get_current_user),
 ) -> User:
@@ -79,7 +69,6 @@ def get_current_user_any(
     return current_user
 
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def get_current_admin(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
@@ -116,8 +105,6 @@ def get_current_patient(
     return current_user
 
 
-<<<<<<< HEAD
-=======
 def get_current_caregiver_or_patient(
     current_user: User = Depends(get_current_active_user),
 ) -> User:
@@ -130,7 +117,6 @@ def get_current_caregiver_or_patient(
     return current_user
 
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 def check_patient_access(
     current_user: User,
     patient_id: int,
@@ -141,10 +127,7 @@ def check_patient_access(
     - Admin: full access
     - Patient: can only access own patient profile
     - Doctor: can only access actively assigned patients (404 if not assigned)
-<<<<<<< HEAD
-=======
     - Caregiver: can only access linked patients with active consent
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     """
     if current_user.role == "admin":
         return True
@@ -157,8 +140,6 @@ def check_patient_access(
             )
         return True
 
-<<<<<<< HEAD
-=======
     if current_user.role == "caregiver":
         link = db.query(CaregiverLink).filter(
             CaregiverLink.caregiver_user_id == current_user.id,
@@ -183,7 +164,6 @@ def check_patient_access(
             )
         return True
 
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     if current_user.role == "doctor":
         if not current_user.doctor_profile:
             raise HTTPException(
@@ -203,8 +183,6 @@ def check_patient_access(
         detail="Access denied",
     )
 
-<<<<<<< HEAD
-=======
 
 def resolve_acting_patient_id(
     current_user: User,
@@ -262,4 +240,3 @@ def resolve_acting_patient_id(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Admin must specify acting patient ID")
 
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="CAREGIVER_SCOPE: Unauthorized role")
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

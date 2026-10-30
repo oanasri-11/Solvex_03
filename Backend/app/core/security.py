@@ -1,16 +1,9 @@
-<<<<<<< HEAD
-# type: ignore
-=======
 """Core security module: password hashing and JWT token handling."""
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from pathlib import Path
-<<<<<<< HEAD
-=======
 import uuid
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -51,23 +44,18 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(
 # Password Hashing
 # ==========================================
 
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto"
-)
-
+import bcrypt
 
 def hash_password(password: str) -> str:
-    """Hash a plain-text password."""
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
-
-def verify_password(
-    plain_password: str,
-    hashed_password: str
-) -> bool:
-    """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        return bcrypt.checkpw(plain_password.encode("utf-8")[:72], hashed_password.encode("utf-8"))
+    except Exception:
+        return False
 
 
 # ==========================================
@@ -88,18 +76,12 @@ def create_access_token(
         else timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
-<<<<<<< HEAD
-    to_encode.update({
-        "exp": expire,
-        "type": "access"
-=======
     jti = str(uuid.uuid4())
 
     to_encode.update({
         "exp": expire,
         "type": "access",
         "jti": jti,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     })
 
     return jwt.encode(
@@ -120,18 +102,12 @@ def create_refresh_token(
         days=REFRESH_TOKEN_EXPIRE_DAYS
     )
 
-<<<<<<< HEAD
-    to_encode.update({
-        "exp": expire,
-        "type": "refresh"
-=======
     jti = str(uuid.uuid4())
 
     to_encode.update({
         "exp": expire,
         "type": "refresh",
         "jti": jti,
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     })
 
     return jwt.encode(
@@ -159,8 +135,6 @@ def decode_token(token: str) -> Optional[Dict[str, Any]]:
 
     except JWTError:
         return None
-<<<<<<< HEAD
-=======
 
 
 def get_token_jti(token: str) -> Optional[str]:
@@ -193,4 +167,3 @@ def revoke_token(db, jti: str, user_id: int, token_type: str, expires_at: dateti
         expires_at=expires_at,
     ))
     db.commit()
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489

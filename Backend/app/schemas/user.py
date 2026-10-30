@@ -1,19 +1,6 @@
 """Pydantic schemas for the User entity."""
 
 from datetime import datetime
-<<<<<<< HEAD
-from typing import Optional
-
-from pydantic import BaseModel, ConfigDict
-
-
-class UserBase(BaseModel):
-    email: str
-    full_name: str
-    role: str
-    is_active: bool = True
-    is_verified: bool = False
-=======
 from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
@@ -32,7 +19,6 @@ class UserBase(BaseModel):
     text_size: int = Field(100, description="Text size: 100, 125, 150")
     theme: str = Field("light", description="Theme: light, calm_dark")
     high_contrast: bool = False
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
 
 
 class UserCreate(UserBase):
@@ -40,23 +26,6 @@ class UserCreate(UserBase):
 
 
 class UserUpdate(BaseModel):
-<<<<<<< HEAD
-    email: Optional[str] = None
-    full_name: Optional[str] = None
-    role: Optional[str] = None
-    is_active: Optional[bool] = None
-    is_verified: Optional[bool] = None
-    password: Optional[str] = None
-
-
-class UserOut(BaseModel):
-    id: int
-    email: str
-    full_name: str
-    role: str
-    is_active: bool
-    is_verified: bool
-=======
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     full_name: Optional[str] = None
@@ -96,13 +65,10 @@ class UserOut(BaseModel):
     text_size: int
     theme: str
     high_contrast: bool
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
     created_at: datetime
     updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
-<<<<<<< HEAD
-=======
 
 
 class UserMeResponse(BaseModel):
@@ -139,4 +105,3 @@ class UserListItem(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
->>>>>>> 4e52f68428b0d6100ad60954edfda790fa8a3489
