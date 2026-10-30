@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Stethoscope, User, Lock, Sparkles } from 'lucide-react';
+import { Stethoscope, User, Lock, Sparkles, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 
 export const DevNavBar: React.FC = () => {
   const {
@@ -12,17 +12,43 @@ export const DevNavBar: React.FC = () => {
     patientView,
     setPatientView,
     authView,
-    setAuthView
+    setAuthView,
+    resetToSplash
   } = useApp();
+
+  const [collapsed, setCollapsed] = useState(false);
+
+  if (collapsed) {
+    return (
+      <button
+        onClick={() => setCollapsed(false)}
+        className="fixed top-2 right-2 z-50 bg-slate-900/90 text-teal-400 hover:text-white px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg border border-slate-700 flex items-center gap-1.5 backdrop-blur-xs"
+      >
+        <Sparkles className="w-3 h-3 text-teal-400" />
+        <span>روض Navigator</span>
+        <ChevronDown className="w-3 h-3" />
+      </button>
+    );
+  }
 
   return (
     <div className="bg-slate-900 text-white text-xs py-1.5 px-4 sticky top-0 z-50 shadow-md border-b border-slate-800 flex items-center justify-between flex-wrap gap-2">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5 font-bold text-teal-400">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>TensioCare UI Showcase</span>
+          <span>روض Flow Navigator</span>
         </div>
         
+        {/* Reset / Replay Flow from Splash Screen */}
+        <button
+          onClick={resetToSplash}
+          title="Replay full app flow starting from Splash Screen"
+          className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-teal-600/30 hover:bg-teal-600/50 text-teal-300 font-semibold text-[11px] border border-teal-500/40 transition-colors"
+        >
+          <RotateCcw className="w-3 h-3" />
+          <span>Test Flow (Splash)</span>
+        </button>
+
         {/* Portal switcher */}
         <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
           <button
@@ -66,8 +92,8 @@ export const DevNavBar: React.FC = () => {
       </div>
 
       {/* Screen selector pills */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <span className="text-slate-400 mr-1 hidden sm:inline">Active View:</span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-slate-400 mr-1 hidden sm:inline">Active Screen:</span>
         
         {appView === 'doctor' && (
           <>
@@ -173,6 +199,15 @@ export const DevNavBar: React.FC = () => {
             </button>
           </>
         )}
+
+        {/* Minimize button */}
+        <button
+          onClick={() => setCollapsed(true)}
+          title="Minimize navigator"
+          className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 ml-1"
+        >
+          <ChevronUp className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   );

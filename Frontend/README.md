@@ -1,6 +1,6 @@
-# TensioCare (رَوض) — Frontend
+# روض — Frontend
 
-A pixel-perfect, fully responsive, and modular React frontend for the **TensioCare (روض)** Clinical Telemonitoring Platform, based on the design system in `assets/UI`.
+A pixel-perfect, fully responsive, and modular React frontend for the **روض** Clinical Telemonitoring Platform, based on the design system in `assets/UI`.
 
 ---
 

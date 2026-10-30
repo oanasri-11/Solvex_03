@@ -61,7 +61,7 @@ export const PatientAlertsActions: React.FC = () => {
             Chest pain, shortness of breath or another severe symptom? Call 15 or 112.
           </h4>
           <p className="text-xs text-rose-700 mt-0.5">
-            Do not wait for a portal response. TensioCare is not an emergency service.
+            Do not wait for a portal response. روض is not an emergency service.
           </p>
         </div>
       </div>

@@ -9,7 +9,9 @@ import {
   Bell, 
   User, 
   Menu, 
-  X
+  X,
+  LogOut,
+  ShieldCheck
 } from 'lucide-react';
 
 interface PatientLayoutProps {
@@ -17,7 +19,7 @@ interface PatientLayoutProps {
 }
 
 export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
-  const { patientView, setPatientView, settings, updateSettings } = useApp();
+  const { patientView, setPatientView, settings, updateSettings, logout } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -45,7 +47,12 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
       >
         <div className="p-6">
           <div className="flex justify-between items-center lg:justify-center mb-8">
-            <BrandLogo size="md" showSubtitle={false} />
+            <BrandLogo 
+              size="md" 
+              showTitle={true} 
+              showSubtitle={true} 
+              subtitleText="Patient portal" 
+            />
             <button 
               onClick={() => setMobileMenuOpen(false)}
               className="lg:hidden p-1 rounded-md text-slate-400 hover:text-slate-600"
@@ -82,11 +89,35 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
           </nav>
         </div>
 
-        {/* Patient portal footer */}
-        <div className="p-6 border-t border-slate-100">
+        {/* Patient portal footer & Logout */}
+        <div className="p-5 border-t border-slate-100 space-y-3">
           <div className="bg-[#e6f4f1] text-[#0d6269] p-3 rounded-xl text-xs">
-            <p className="font-semibold">Telemonitoring Active</p>
-            <p className="text-[11px] text-teal-800/80 mt-0.5">Synced with Dr. Philippe Laurent</p>
+            <div className="flex items-center gap-1.5 font-bold">
+              <ShieldCheck className="w-4 h-4 text-[#0d6269]" />
+              <span>روض Telemonitoring Active</span>
+            </div>
+            <p className="text-[11px] text-teal-800/80 mt-1">Synced with Dr. Philippe Laurent</p>
+          </div>
+
+          {/* User info card with logout button */}
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-[#004d55] text-white flex items-center justify-center shrink-0">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-800 truncate">Amina Benali</p>
+                <p className="text-[10px] text-slate-400 truncate">#TC-4819</p>
+              </div>
+            </div>
+
+            <button
+              onClick={logout}
+              title="Log out of Patient Portal"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>
@@ -106,7 +137,7 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
           </div>
 
           {/* Controls: Language toggle + Bell + User */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-3 sm:gap-5">
             {/* Language toggle pill */}
             <div className="flex items-center bg-slate-100 p-0.5 rounded-full border border-slate-200">
               <button
@@ -127,7 +158,7 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Arabic
+                عربي
               </button>
             </div>
 
@@ -147,6 +178,15 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
                 <User className="w-5 h-5" />
               </div>
             </div>
+
+            {/* Logout button */}
+            <button
+              onClick={logout}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50/80 hover:bg-rose-100 rounded-lg border border-rose-100 transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Log out</span>
+            </button>
           </div>
         </header>
 

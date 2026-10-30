@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { BrandLogo } from '../common/BrandLogo';
-import { User, FileText, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { User, FileText, Eye, EyeOff, ChevronDown, HeartHandshake } from 'lucide-react';
 
 export const SignUpPatientScreen: React.FC = () => {
-  const { setAuthView, setAppView, setRole } = useApp();
+  const { setAuthView, loginAsPatient, setAuthRole } = useApp();
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
@@ -14,22 +14,30 @@ export const SignUpPatientScreen: React.FC = () => {
       alert('Please agree to the Terms of Service and Privacy Policy.');
       return;
     }
-    setRole('patient');
-    setAppView('patient');
+    loginAsPatient();
   };
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-between p-6 sm:p-10 animate-fadeIn">
       {/* Top Left Logo */}
-      <div className="flex items-center">
-        <BrandLogo size="sm" showSubtitle={false} horizontal={true} />
+      <div className="flex items-center justify-between max-w-6xl mx-auto w-full">
+        <BrandLogo 
+          size="sm" 
+          showSubtitle={true} 
+          subtitleText="Patient Portal Registration" 
+          horizontal={true} 
+        />
+        <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-[#0d6269] bg-teal-50 px-3 py-1.5 rounded-full border border-teal-100">
+          <HeartHandshake className="w-3.5 h-3.5" />
+          <span>Patient Registration</span>
+        </div>
       </div>
 
       {/* Main Container */}
       <div className="w-full max-w-xl mx-auto my-6 space-y-6">
         {/* Patient / Doctor Toggle Pill */}
         <div className="flex justify-center">
-          <div className="inline-flex bg-slate-200/70 p-1 rounded-full text-xs font-semibold border border-slate-200">
+          <div className="inline-flex bg-slate-200/80 p-1 rounded-full text-xs font-semibold border border-slate-200">
             <button
               type="button"
               className="flex items-center gap-1.5 px-6 py-2 rounded-full bg-white text-slate-900 shadow-xs transition-all font-bold"
@@ -40,7 +48,10 @@ export const SignUpPatientScreen: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setAuthView('signup_doctor')}
+              onClick={() => {
+                setAuthRole('doctor');
+                setAuthView('signup_doctor');
+              }}
               className="flex items-center gap-1.5 px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 transition-all"
             >
               <FileText className="w-3.5 h-3.5" />
@@ -51,16 +62,16 @@ export const SignUpPatientScreen: React.FC = () => {
 
         {/* Heading */}
         <div className="text-center space-y-1.5">
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Create your Patient account
           </h1>
-          <p className="text-slate-500 text-sm max-w-md mx-auto">
-            Join TensioCare telemonitoring to share readings with your care team.
+          <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto">
+            Join روض telemonitoring to share readings with your care team.
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8">
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-8 sm:p-10">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
@@ -70,7 +81,8 @@ export const SignUpPatientScreen: React.FC = () => {
               <input
                 type="text"
                 required
-                placeholder="Jane Doe"
+                defaultValue="Amina Benali"
+                placeholder="Amina Benali"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
             </div>
@@ -83,6 +95,7 @@ export const SignUpPatientScreen: React.FC = () => {
               <input
                 type="email"
                 required
+                defaultValue="amina.benali@email.com"
                 placeholder="you@company.com"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
@@ -97,6 +110,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  defaultValue="SecurePass123!"
                   placeholder="Create a password"
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269] pr-10"
                 />
@@ -119,6 +133,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 <div className="relative">
                   <input
                     type="date"
+                    defaultValue="1964-05-14"
                     className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
                   />
                 </div>
@@ -130,7 +145,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 </label>
                 <div className="relative">
                   <select
-                    defaultValue=""
+                    defaultValue="female"
                     className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269] cursor-pointer"
                   >
                     <option value="" disabled>Select gender</option>
@@ -151,38 +166,9 @@ export const SignUpPatientScreen: React.FC = () => {
               <input
                 type="tel"
                 placeholder="+33 6 12 34 56 78"
+                defaultValue="+33 6 55 44 33 22"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
-            </div>
-
-            {/* Residential Address */}
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                Residential Address
-              </label>
-              <input
-                type="text"
-                placeholder="Street address (e.g. 12 rue de la Paix)"
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
-              />
-            </div>
-
-            {/* City & Postal Code */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <input
-                  type="text"
-                  placeholder="City"
-                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  placeholder="Postal code"
-                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
-                />
-              </div>
             </div>
 
             {/* Emergency Contact Header */}
@@ -201,6 +187,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Next of kin or contact"
+                  defaultValue="Samir Benali (Son)"
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
                 />
               </div>
@@ -211,6 +198,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 <input
                   type="tel"
                   placeholder="+33 6 00 00 00 00"
+                  defaultValue="+33 6 99 88 77 66"
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
                 />
               </div>
@@ -226,7 +214,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 className="mt-1 w-4 h-4 rounded text-[#0d6269] focus:ring-teal-500 border-slate-300 cursor-pointer"
               />
               <label htmlFor="patientTerms" className="text-xs text-slate-600 leading-relaxed cursor-pointer">
-                I agree to the <span className="text-slate-900 font-semibold underline">Terms of Service</span> and acknowledge the <span className="text-slate-900 font-semibold underline">Privacy Policy</span> governing health data telemonitoring.
+                I agree to the <span className="text-slate-900 font-semibold underline">Terms of Service</span> and acknowledge the <span className="text-slate-900 font-semibold underline">Privacy Policy</span> governing health data telemonitoring on منصة روض.
               </label>
             </div>
 
@@ -236,7 +224,7 @@ export const SignUpPatientScreen: React.FC = () => {
                 type="submit"
                 className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#004d55] text-white hover:bg-teal-900 shadow-sm transition-colors"
               >
-                Create patient account
+                Create patient account & Enter Portal
               </button>
             </div>
 
@@ -246,7 +234,10 @@ export const SignUpPatientScreen: React.FC = () => {
                 Already have an account?{' '}
                 <button
                   type="button"
-                  onClick={() => setAuthView('login')}
+                  onClick={() => {
+                    setAuthRole('patient');
+                    setAuthView('login');
+                  }}
                   className="font-bold text-[#0d6269] hover:underline"
                 >
                   Log in
@@ -258,8 +249,8 @@ export const SignUpPatientScreen: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <footer className="w-full flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 border-t border-slate-100 pt-6">
-        <div>© 2026 TensioCare. All rights reserved.</div>
+      <footer className="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2 border-t border-slate-100 pt-6">
+        <div>© 2026 روض. All rights reserved.</div>
         <div className="flex items-center gap-6">
           <a href="#privacy" className="hover:text-slate-600">Privacy policy</a>
           <a href="#terms" className="hover:text-slate-600">Terms of service</a>

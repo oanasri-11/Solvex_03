@@ -26,11 +26,19 @@ interface AppContextType {
   setAppView: (view: AppView) => void;
   authView: AuthView;
   setAuthView: (view: AuthView) => void;
+  authRole: Role;
+  setAuthRole: (role: Role) => void;
   doctorView: DoctorView;
   setDoctorView: (view: DoctorView) => void;
   patientView: PatientView;
   setPatientView: (view: PatientView) => void;
   
+  // Auth & Flow helpers
+  loginAsDoctor: () => void;
+  loginAsPatient: () => void;
+  logout: () => void;
+  resetToSplash: () => void;
+
   // Data
   patients: Patient[];
   selectedPatient: Patient;
@@ -64,8 +72,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [role, setRole] = useState<Role>('doctor');
-  const [appView, setAppView] = useState<AppView>('doctor');
-  const [authView, setAuthView] = useState<AuthView>('login');
+  const [appView, setAppView] = useState<AppView>('auth');
+  const [authView, setAuthView] = useState<AuthView>('splash');
+  const [authRole, setAuthRole] = useState<Role>('doctor');
   const [doctorView, setDoctorView] = useState<DoctorView>('home');
   const [patientView, setPatientView] = useState<PatientView>('home');
 
@@ -140,6 +149,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const loginAsDoctor = () => {
+    setRole('doctor');
+    setDoctorView('home');
+    setAppView('doctor');
+  };
+
+  const loginAsPatient = () => {
+    setRole('patient');
+    setPatientView('home');
+    setAppView('patient');
+  };
+
+  const logout = () => {
+    setAppView('auth');
+    setAuthView('login');
+  };
+
+  const resetToSplash = () => {
+    setAppView('auth');
+    setAuthView('splash');
+  };
+
   const navigateToDoctorPatient = (patientId: string) => {
     selectPatientById(patientId);
     setAppView('doctor');
@@ -173,10 +204,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAppView,
         authView,
         setAuthView,
+        authRole,
+        setAuthRole,
         doctorView,
         setDoctorView,
         patientView,
         setPatientView,
+        loginAsDoctor,
+        loginAsPatient,
+        logout,
+        resetToSplash,
         patients,
         selectedPatient,
         setSelectedPatient,

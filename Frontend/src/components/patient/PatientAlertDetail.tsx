@@ -186,7 +186,7 @@ export const PatientAlertDetail: React.FC = () => {
               <span>For emergency symptoms</span>
             </div>
             <p className="text-xs text-rose-800 leading-relaxed">
-              For chest pain or shortness of breath, call 15 or 112 without waiting for sync. TensioCare is not an emergency service.
+              For chest pain or shortness of breath, call 15 or 112 without waiting for sync. روض is not an emergency service.
             </p>
           </div>
         </div>
