@@ -1,122 +1,93 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React from 'react';
+import { AppProvider, useApp } from './context/AppContext';
+import { DevNavBar } from './components/common/DevNavBar';
+import { DoctorLayout } from './components/layout/DoctorLayout';
+import { PatientLayout } from './components/layout/PatientLayout';
 
-function App() {
-  const [count, setCount] = useState(0)
+// Doctor Views
+import { DoctorDashboard } from './components/doctor/DoctorDashboard';
+import { DoctorPatients } from './components/doctor/DoctorPatients';
+import { DoctorAlerts } from './components/doctor/DoctorAlerts';
+import { DoctorPatientDetail } from './components/doctor/DoctorPatientDetail';
+import { DoctorPatientReview } from './components/doctor/DoctorPatientReview';
 
+// Patient Views
+import { PatientHome } from './components/patient/PatientHome';
+import { PatientRecordReading } from './components/patient/PatientRecordReading';
+import { PatientHistoryTrends } from './components/patient/PatientHistoryTrends';
+import { PatientAlertsActions } from './components/patient/PatientAlertsActions';
+import { PatientAlertDetail } from './components/patient/PatientAlertDetail';
+import { PatientSettings } from './components/patient/PatientSettings';
+
+// Auth Views
+import { SplashScreen } from './components/auth/SplashScreen';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { SignUpDoctorScreen } from './components/auth/SignUpDoctorScreen';
+import { SignUpPatientScreen } from './components/auth/SignUpPatientScreen';
+
+const MainRouter: React.FC = () => {
+  const { appView, authView, doctorView, patientView } = useApp();
+
+  // Auth & Splash Mode
+  if (appView === 'auth') {
+    switch (authView) {
+      case 'splash':
+        return <SplashScreen />;
+      case 'login':
+        return <LoginScreen />;
+      case 'signup_doctor':
+        return <SignUpDoctorScreen />;
+      case 'signup_patient':
+        return <SignUpPatientScreen />;
+      default:
+        return <LoginScreen />;
+    }
+  }
+
+  // Doctor Workspace Portal
+  if (appView === 'doctor') {
+    return (
+      <DoctorLayout>
+        {doctorView === 'home' && <DoctorDashboard />}
+        {doctorView === 'patients' && <DoctorPatients />}
+        {doctorView === 'alerts' && <DoctorAlerts />}
+        {doctorView === 'patient_detail' && <DoctorPatientDetail />}
+        {doctorView === 'patient_review' && <DoctorPatientReview />}
+      </DoctorLayout>
+    );
+  }
+
+  // Patient Workspace Portal
+  if (appView === 'patient') {
+    return (
+      <PatientLayout>
+        {patientView === 'home' && <PatientHome />}
+        {patientView === 'tracking' && <PatientRecordReading />}
+        {patientView === 'history' && <PatientHistoryTrends />}
+        {patientView === 'alerts' && <PatientAlertsActions />}
+        {patientView === 'alert_detail' && <PatientAlertDetail />}
+        {patientView === 'settings' && <PatientSettings />}
+      </PatientLayout>
+    );
+  }
+
+  return <LoginScreen />;
+};
+
+export function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <AppProvider>
+      <div className="min-h-screen flex flex-col font-sans antialiased text-slate-900 bg-[#f8fafc]">
+        {/* Navigation & Showcase Bar */}
+        <DevNavBar />
+        
+        {/* App Main Body */}
+        <div className="flex-1">
+          <MainRouter />
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </div>
+    </AppProvider>
+  );
 }
 
-export default App
+export default App;
