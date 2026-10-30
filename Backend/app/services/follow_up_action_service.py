@@ -84,6 +84,15 @@ def update_follow_up_action(
         raise
 
 
+
+
+def complete_follow_up_action(db: Session, action_id: int) -> Optional[FollowUpAction]:
+    """Mark a follow-up action as completed (soft delete).
+    
+    This function is an alias for delete_follow_up_action, renamed to better
+    reflect its actual behavior: moving the action to a completed state.
+    """
+    return delete_follow_up_action(db, action_id)
 def delete_follow_up_action(db: Session, action_id: int) -> Optional[FollowUpAction]:
     """Soft delete a follow-up action only if it is not completed.
 

@@ -15,9 +15,10 @@ def create_user(db: Session, user_in: UserCreate) -> User:
         is_active = getattr(user_in, "is_active", True)
         if is_active is None:
             is_active = True
-        is_verified = getattr(user_in, "is_verified", False)
+        # Signup users are verified by default (no email verification flow exists)
+        is_verified = True
         if is_verified is None:
-            is_verified = False
+            is_verified = True
         hashed_password = getattr(user_in, "hashed_password", None) or getattr(user_in, "password", "")
 
         db_user = User(

@@ -10,7 +10,10 @@ from app.schemas.alertreading import (
     AlertReadingCreate,
     AlertReadingOut,
 )
-
+from app.models.user import User
+from app.models.Alert import Alert
+from app.models.BloodPressureReading import BloodPressureReading
+from app.core.deps import get_current_active_user
 from app.services.alert_reading_service import (
     create_alert_reading,
     get_alert_reading_by_id,
@@ -31,8 +34,29 @@ router = APIRouter(
 )
 def create_alert_reading_route(
     link_in: AlertReadingCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
+    # Verify alert and reading belong to the same patient
+    alert = db.query(Alert).filter(Alert.id == link_in.alert_id).first()
+    if not alert:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found",
+        )
+    reading = db.query(BloodPressureReading).filter(
+        BloodPressureReading.id == link_in.reading_id
+    ).first()
+    if not reading:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Reading not found",
+        )
+    if alert.patient_id != reading.patient_id:# type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Alert and reading must belong to the same patient",
+        )
     link = create_alert_reading(db, link_in)
 
     if link is None:

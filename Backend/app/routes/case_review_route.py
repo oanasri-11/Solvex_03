@@ -1,111 +1,192 @@
-"""Case review routes.
-
-Route -> Service Layer -> CRUD (SQLAlchemy) -> Database.
-Case reviews are an audit trail: no DELETE. Access control:
-- patients only their own reviews; doctors only assigned patients; admins full.
-"""
 
 from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.core.deps import (
-    get_current_active_user,
-    get_current_admin,
-    get_current_doctor,
-    get_current_patient,
-    check_patient_access,
-)
 from app.models.user import User
+
 from app.services.patient_service import get_patient_profile_by_user_id
+
+from app.services.assignment_service import (
+    is_doctor_assigned,
+    get_all_assignments,
+)
+
 from app.services.case_review_service import (
     create_case_review,
     get_case_review_by_id,
     get_all_case_reviews,
     update_case_review,
 )
+
 from app.schemas.case_review import (
     CaseReviewCreate,
     CaseReviewUpdate,
     CaseReviewOut,
 )
 
-router = APIRouter(prefix="/case-reviews", tags=["case-reviews"])
+# IMPORTANT:
+# Replace this import with your actual authentication dependency.
+from app.core.deps import get_current_active_user# type: ignore
 
 
+router = APIRouter(
+    prefix="/case-reviews",
+    tags=["Case Reviews"],
+)
+
+
+# Helper: Get patient profile
 def _patient_profile_for(db: Session, current_user: User):
-    if current_user.role == "patient": # type: ignore
-        return get_patient_profile_by_user_id(db, current_user.id) # type: ignore
+    if current_user.role == "patient":# type: ignore
+        return get_patient_profile_by_user_id(
+            db,
+            current_user.id,# type: ignore
+        )
+
     return None
 
 
-def _require_review_access(current_user: User, review, db: Session) -> None:
-    if current_user.role == "patient": # type: ignore
-        check_patient_access(current_user, review.patient_id, db)
-    elif current_user.role == "doctor": # type: ignore
+# Helper: Check patient access
+def _check_patient_access(
+    current_user: User,
+    patient_id: int,
+    db: Session,
+) -> None:
+
+    if current_user.role == "patient":# type: ignore
+        profile = _patient_profile_for(db, current_user)
+
+        if not profile or profile.id != patient_id:# type: ignore
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only access your own reviews",
+            )
+
+    elif current_user.role == "doctor":# type: ignore
         if not current_user.doctor_profile:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Doctor profile not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Doctor profile not found",
             )
-        from app.services.assignment_service import is_doctor_assigned
 
-        if not is_doctor_assigned(db, current_user.doctor_profile.id, review.patient_id):
+        if not is_doctor_assigned(
+            db,
+            current_user.doctor_profile.id,
+            patient_id,
+        ):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Patient not found or not assigned to doctor",
             )
 
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized",
+        )
 
+
+# Helper: Check review access
+def _require_review_access(
+    current_user: User,
+    review,
+    db: Session,
+) -> None:
+    _check_patient_access(
+        current_user,
+        review.patient_id,
+        db,
+    )
+
+
+# 1. List case reviews
 @router.get("/", response_model=List[CaseReviewOut])
 def list_case_reviews(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
     patient_id: Optional[int] = Query(None),
-    status: Optional[str] = Query(None),
+    review_status: Optional[str] = Query(None, alias="status"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
 ):
-    """List case reviews."""
     reviews = get_all_case_reviews(
-        db, skip=skip, limit=limit, patient_id=patient_id, status=status
+        db,
+        skip=skip,
+        limit=limit,
+        patient_id=patient_id,
+        status=review_status,
     )
-    if current_user.role == "patient": # type: ignore
+
+    if current_user.role == "patient":# type: ignore
         profile = _patient_profile_for(db, current_user)
+
         if not profile:
             return []
-        reviews = [r for r in reviews if r.patient_id == profile.id] # type: ignore
-    elif current_user.role == "doctor": # type: ignore
+
+        reviews = [
+            review for review in reviews
+            if review.patient_id == profile.id# type: ignore
+        ]
+
+    elif current_user.role == "doctor":# type: ignore
         if not current_user.doctor_profile:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Doctor profile not found" # type: ignore
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Doctor profile not found",
             )
-        from app.services.assignment_service import get_all_assignments
 
         assignments = get_all_assignments(
-            db, doctor_id=current_user.doctor_profile.id, active=True
+            db,
+            doctor_id=current_user.doctor_profile.id,
+            active=True,
         )
-        allowed_patient_ids = {a.patient_id for a in assignments}
-        reviews = [r for r in reviews if r.patient_id in allowed_patient_ids]
+
+        allowed_patient_ids = {
+            assignment.patient_id for assignment in assignments
+        }
+
+        reviews = [
+            review for review in reviews
+            if review.patient_id in allowed_patient_ids
+        ]
+
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to list reviews",
+        )
+
     return reviews
 
 
+# 2. Get case review by ID
 @router.get("/{review_id}", response_model=CaseReviewOut)
 def get_case_review(
     review_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Get a case review by ID."""
     review = get_case_review_by_id(db, review_id)
+
     if not review:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Case review not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case review not found",
         )
-    _require_review_access(current_user, review, db)
+
+    _require_review_access(
+        current_user,
+        review,
+        db,
+    )
+
     return review
 
 
+# 3. Create case review
 @router.post(
     "/",
     response_model=CaseReviewOut,
@@ -117,22 +198,40 @@ def create_case_review_route(
     current_user: User = Depends(get_current_active_user),
 ):
     """Create a case review."""
-    if current_user.role == "patient": # type: ignore
-        profile = _patient_profile_for(db, current_user)
-        if not profile or review_in.patient_id != profile.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Patients may only create reviews for themselves",
-            )
-    review = create_case_review(db, review_in)
+
+    if current_user.role != "doctor":# type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can create case reviews",
+        )
+
+    if not current_user.doctor_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor profile not found",
+        )
+
+    _check_patient_access(
+        current_user,
+        review_in.patient_id,
+        db,
+    )
+
+    review = create_case_review(
+        db,
+        review_in,
+    )
+
     if not review:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Patient or reviewer not found",
         )
+
     return review
 
 
+# 4. Update case review
 @router.put("/{review_id}", response_model=CaseReviewOut)
 def update_case_review_route(
     review_id: int,
@@ -140,17 +239,38 @@ def update_case_review_route(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Update a case review."""
     review = get_case_review_by_id(db, review_id)
+
     if not review:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Case review not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case review not found",
         )
-    _require_review_access(current_user, review, db)
-    updated = update_case_review(db, review_id, review_in)
+
+    _require_review_access(
+        current_user,
+        review,
+        db,
+    )
+
+    if current_user.role != "doctor":# type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can update case reviews",
+        )
+
+    updated = update_case_review(
+        db,
+        review_id,
+        review_in,
+    )
+
     if not updated:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Case review not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Case review not found",
         )
+
     return updated
+
 

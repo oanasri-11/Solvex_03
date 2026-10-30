@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.core.security import verify_password, hash_password, create_access_token, create_refresh_token, decode_token
-from app.core.deps import get_current_active_user
+
 from app.models.user import User
-from app.services.user_service import get_user_by_email, get_user_by_id, update_user
-from app.schemas.auth import LoginRequest, RefreshTokenRequest, PasswordChangeRequest, Token
-from app.schemas.user import UserOut, UserUpdate
+from app.services.user_service import get_user_by_email, get_user_by_id, update_user, create_user
+from app.schemas.auth import LoginRequest, RefreshTokenRequest, PasswordChangeRequest, Token, SignupRequest
+from app.schemas.user import UserOut, UserUpdate, UserCreate
 from app.schemas.common import MessageResponse
+from app.core.deps import get_current_active_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -84,7 +85,7 @@ def refresh_token(
 
 @router.get("/me", response_model=UserOut)
 def read_current_user(
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_active_user),# type: ignore
 ):
     """Get profile information for the currently authenticated user."""
     return current_user
@@ -93,7 +94,8 @@ def read_current_user(
 @router.post("/change-password", response_model=MessageResponse)
 def change_password(
     data: PasswordChangeRequest,
-    db: Session = Depends(get_db),
+    
+    db: Session = Depends(get_db),# type: ignore
     current_user: User = Depends(get_current_active_user),
 ):
     """Change password for the currently authenticated user."""
@@ -106,4 +108,27 @@ def change_password(
     new_hash = hash_password(data.new_password)
     update_user(db, current_user.id, UserUpdate(password=new_hash)) # type: ignore
     return MessageResponse(message="Password successfully changed")
+
+
+@router.post("/signup", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+def signup(
+    signup_data: SignupRequest,
+    db: Session = Depends(get_db),
+):
+    """Register a new user account and return the created user profile."""
+    if get_user_by_email(db, signup_data.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
+    db_user = create_user(
+        db,
+        UserCreate(
+            email=signup_data.email,
+            full_name=signup_data.full_name,
+            role=signup_data.role,
+            hashed_password=hash_password(signup_data.password),
+        ),
+    )
+    return db_user
 

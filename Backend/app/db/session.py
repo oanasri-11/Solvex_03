@@ -3,7 +3,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.db.base import Base
+from .base import Base
 
 # SQLite database file (project root)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"

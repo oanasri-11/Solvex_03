@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.Auditlog import AuditLog
-from app.models.User import User# type: ignore
+from app.models.user import User
 from app.schemas.audit_log import AuditLogCreate, AuditLogUpdate, AuditLogOut
 
 

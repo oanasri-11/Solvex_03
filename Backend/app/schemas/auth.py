@@ -34,3 +34,11 @@ class PasswordChangeRequest(BaseModel):
     old_password: str
     new_password: str
 
+
+
+class SignupRequest(BaseModel):
+    """User registration (signup) request schema."""
+    email: EmailStr
+    password: str
+    full_name: str
+    role: str = "patient"

@@ -148,23 +148,3 @@ def is_doctor_assigned(db: Session, doctor_id: int, patient_id: int) -> bool:# t
 def assert_doctor_has_access(db: Session, doctor_id: int, patient_id: int) -> bool: # type: ignore
     """Assert active assignment exists; returns True or False."""
     return is_doctor_assigned(db, doctor_id, patient_id)
-
-
-
-def is_doctor_assigned(db: Session, doctor_id: int, patient_id: int) -> bool:
-    """Check if an active assignment exists between doctor and patient."""
-    assignment = (
-        db.query(DoctorPatientAssignment)
-        .filter(
-            DoctorPatientAssignment.doctor_id == doctor_id,
-            DoctorPatientAssignment.patient_id == patient_id,
-            DoctorPatientAssignment.is_active == True,  # noqa: E712
-        )
-        .first()
-    )
-    return assignment is not None
-
-
-def assert_doctor_has_access(db: Session, doctor_id: int, patient_id: int) -> bool:
-    """Assert active assignment exists; returns True or False."""
-    return is_doctor_assigned(db, doctor_id, patient_id)

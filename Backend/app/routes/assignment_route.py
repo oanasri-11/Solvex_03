@@ -8,6 +8,7 @@ from app.db.session import get_db
 from app.core.deps import (
     get_current_active_user,
     check_patient_access,
+    
 )
 from app.models.user import User
 
@@ -84,7 +85,7 @@ def check_assignment_route(
     """Check whether a doctor is actively assigned to a patient."""
 
     if current_user.role == "patient":# type: ignore
-        check_patient_access(current_user, patient_id, db)
+        check_patient_access(current_user, patient_id, db)# type: ignore
 
     elif current_user.role == "doctor":# type: ignore
         if (

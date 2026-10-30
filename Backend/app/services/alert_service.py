@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.Alert import Alert
-from app.models.PatientProfile import PatientProfile# type: ignore
+from app.models.patientprofile import PatientProfile# type: ignore
 from app.schemas.alert import AlertCreate, AlertUpdate, AlertOut
 
 

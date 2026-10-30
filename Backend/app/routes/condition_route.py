@@ -1,17 +1,16 @@
 
+
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.core.deps import (
-    get_current_active_user,
-    check_patient_access,
-)
 from app.models.user import User
+from app.core.deps import get_current_active_user
 
 from app.services.patient_service import get_patient_profile_by_user_id
+
 from app.services.condition_service import (
     create_patient_condition,
     get_patient_condition_by_id,
@@ -19,6 +18,7 @@ from app.services.condition_service import (
     update_patient_condition,
     delete_patient_condition,
 )
+
 from app.services.assignment_service import (
     is_doctor_assigned,
     get_all_assignments,
@@ -30,11 +30,16 @@ from app.schemas.condition import (
     PatientConditionOut,
 )
 
+# Replace this import with the actual location of your authentication dependency.
 
-router = APIRouter(prefix="/conditions", tags=["Conditions"])
+
+router = APIRouter(
+    prefix="/conditions",
+    tags=["Conditions"],
+)
 
 
-# Helper: Get patient profile for the authenticated patient
+# Helper: Get patient profile
 def _patient_profile_for(db: Session, current_user: User):
     if current_user.role == "patient":# type: ignore
         return get_patient_profile_by_user_id(db, current_user.id)# type: ignore
@@ -42,15 +47,21 @@ def _patient_profile_for(db: Session, current_user: User):
     return None
 
 
-# Helper: Check whether the current user can access a condition
-def _require_condition_access(
+# Helper: Check patient access
+def _require_patient_access(
     current_user: User,
-    condition,
+    patient_id: int,
     db: Session,
 ) -> None:
 
     if current_user.role == "patient":# type: ignore
-        check_patient_access(current_user, condition.patient_id, db)
+        profile = _patient_profile_for(db, current_user)
+
+        if not profile or profile.id != patient_id:# type: ignore
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only access your own conditions",
+            )
 
     elif current_user.role == "doctor":# type: ignore
         if not current_user.doctor_profile:
@@ -62,7 +73,7 @@ def _require_condition_access(
         if not is_doctor_assigned(
             db,
             current_user.doctor_profile.id,
-            condition.patient_id,
+            patient_id,
         ):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -72,8 +83,21 @@ def _require_condition_access(
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access patient conditions",
+            detail="Not authorized",
         )
+
+
+# Helper: Check condition access
+def _require_condition_access(
+    current_user: User,
+    condition,
+    db: Session,
+) -> None:
+    _require_patient_access(
+        current_user,
+        condition.patient_id,
+        db,
+    )
 
 
 # 1. List conditions
@@ -132,7 +156,7 @@ def list_conditions(
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access patient conditions",
+            detail="Not authorized",
         )
 
     return conditions
@@ -151,37 +175,24 @@ def create_condition_route(
 ):
     """Add a condition for a patient."""
 
-    if current_user.role == "patient":# type: ignore
-        profile = _patient_profile_for(db, current_user)
-
-        if not profile or condition_in.patient_id != profile.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Patients may only add conditions for themselves",
-            )
-
-    elif current_user.role == "doctor":# type: ignore
-        if not current_user.doctor_profile:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Doctor profile not found",
-            )
-
-        if not is_doctor_assigned(
-            db,
-            current_user.doctor_profile.id,
-            condition_in.patient_id,
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Doctor is not assigned to this patient",
-            )
-
-    else:
+    # Only doctors should record clinical conditions.
+    if current_user.role != "doctor":# type: ignore
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to create patient conditions",
+            detail="Only doctors can add patient conditions",
         )
+
+    if not current_user.doctor_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor profile not found",
+        )
+
+    _require_patient_access(
+        current_user,
+        condition_in.patient_id,
+        db,
+    )
 
     condition = create_patient_condition(db, condition_in)
 
@@ -202,8 +213,6 @@ def update_condition_route(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Update a patient condition."""
-
     condition = get_patient_condition_by_id(db, condition_id)
 
     if not condition:
@@ -214,7 +223,17 @@ def update_condition_route(
 
     _require_condition_access(current_user, condition, db)
 
-    updated = update_patient_condition(db, condition_id, condition_in)
+    if current_user.role != "doctor":# type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can update patient conditions",
+        )
+
+    updated = update_patient_condition(
+        db,
+        condition_id,
+        condition_in,
+    )
 
     if not updated:
         raise HTTPException(
@@ -232,8 +251,6 @@ def delete_condition_route(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Soft-delete a patient condition (is_active = False)."""
-
     condition = get_patient_condition_by_id(db, condition_id)
 
     if not condition:
@@ -243,6 +260,12 @@ def delete_condition_route(
         )
 
     _require_condition_access(current_user, condition, db)
+
+    if current_user.role != "doctor":# type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only doctors can deactivate patient conditions",
+        )
 
     deleted = delete_patient_condition(db, condition_id)
 
@@ -262,8 +285,6 @@ def get_condition(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Get a patient condition by ID."""
-
     condition = get_patient_condition_by_id(db, condition_id)
 
     if not condition:
@@ -275,5 +296,3 @@ def get_condition(
     _require_condition_access(current_user, condition, db)
 
     return condition
-
-

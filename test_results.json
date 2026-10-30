@@ -1,0 +1,764 @@
+{
+  "summary": {
+    "total": 63,
+    "passed": 52,
+    "failed": 7,
+    "blocked": 4,
+    "untested": 0,
+    "bugs": 23
+  },
+  "results": [
+    {
+      "method": "POST",
+      "endpoint": "/auth/signup",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/signup (doctor)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/signup (duplicate)",
+      "result": "PASS",
+      "status": 400,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/signup (missing fields)",
+      "result": "PASS",
+      "status": 422,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/login",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/login (wrong password)",
+      "result": "PASS",
+      "status": 401,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/login (nonexistent)",
+      "result": "PASS",
+      "status": 401,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/refresh",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/auth/me (valid token)",
+      "result": "FAIL",
+      "status": 403,
+      "problem": "Signup creates is_verified=False, but /me requires is_verified=True"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/auth/me (after manual verify)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/auth/me (no token)",
+      "result": "PASS",
+      "status": 401,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/auth/me (invalid token)",
+      "result": "PASS",
+      "status": 401,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/auth/change-password",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/me",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/{id} (own)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/users/{id} (another)",
+      "result": "PASS",
+      "status": 403,
+      "problem": "Correctly denied or not found"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/patients/ (create profile)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "SETUP",
+      "endpoint": "Doctor profile (DB insert)",
+      "result": "PASS",
+      "status": null,
+      "problem": "Created directly in DB (no API endpoint exists)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/assignments/ (create)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/patients/ (list own)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/patients/{id} (own)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/patients/{id} (update)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/patients/{id}/deactivate",
+      "result": "PASS",
+      "status": 403,
+      "problem": "Correctly disabled"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/patients/{id} (doctor, assigned)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/assignments/ (list doctor)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/assignments/check/{d}/{p}",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/assignments/{id}",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/assignments/{id} (update)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/assignments/{id}/end",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/assignments/ (patient, forbidden)",
+      "result": "PASS",
+      "status": 403,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/conditions/ (create)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Patient not found or not assigned to doctor\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/conditions/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/schedules/ (create)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Patient not found or not assigned to doctor\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedules/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/readings/ (create)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/readings/ (list patient)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/readings/{id} (patient)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/readings/{id} (doctor, assigned)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Reading not found or patient not assigned to doctor\"}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/alert-readings/ (create)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Alert or blood pressure reading not found.\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/alert-readings/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/help-requests/ (create)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/help-requests/ (list patient)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/help-requests/{id} (patient)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/help-requests/{id}/cancel",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/contact-requests/ (create)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Contact request not found or patient not assigned\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/contact-requests/ (list doctor)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/notifications/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/notifications/unread-count",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/notifications/{id}",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/notifications/{id}/read",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "PATCH",
+      "endpoint": "/notifications/{id}",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/notifications/mark-all-read",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/notifications/{id}",
+      "result": "PASS",
+      "status": 204,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/follow-up-actions/ (create)",
+      "result": "FAIL",
+      "status": 404,
+      "problem": "{\"detail\":\"Follow-up action not found or patient not assigned\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/follow-up-actions/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "POST",
+      "endpoint": "/audit-logs/ (create)",
+      "result": "PASS",
+      "status": 201,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/audit-logs/ (list)",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/audit-logs/{id}",
+      "result": "PASS",
+      "status": 200,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/audit-logs/ (patient, forbidden)",
+      "result": "PASS",
+      "status": 403,
+      "problem": ""
+    },
+    {
+      "method": "GET",
+      "endpoint": "/monitoring-modes/",
+      "result": "BLOCKED",
+      "status": null,
+      "problem": "Route file exists but not mounted in main.py"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/priorities/",
+      "result": "BLOCKED",
+      "status": null,
+      "problem": "Route file exists but not mounted in main.py"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/rule-versions/",
+      "result": "BLOCKED",
+      "status": null,
+      "problem": "Route file exists but not mounted in main.py"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/slots/",
+      "result": "BLOCKED",
+      "status": null,
+      "problem": "Route file exists but not mounted in main.py"
+    }
+  ],
+  "bugs": [
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Route files exist but are not mounted in the FastAPI app",
+      "reproduction": "Check main.py include_router calls",
+      "expected": "All route files should be mounted",
+      "actual": "Not mounted: ['/monitoring-modes', '/priorities', '/rule-versions', '/slots']",
+      "severity": "High"
+    },
+    {
+      "file": "Backend/app/core/deps.py",
+      "function": "get_current_active_user",
+      "problem": "Signup creates users with is_verified=False, but get_current_active_user requires is_verified=True",
+      "reproduction": "Signup as a new user, then call GET /auth/me with the returned token",
+      "expected": "200 OK with user profile",
+      "actual": "403 Forbidden 'Email not verified'",
+      "severity": "Critical"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Route /monitoring-modes/ exists but is not mounted in the FastAPI application",
+      "reproduction": "Send GET /api/v1/monitoring-modes/",
+      "expected": "200 OK (or appropriate response)",
+      "actual": "404 Not Found",
+      "severity": "High"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Route /priorities/ exists but is not mounted in the FastAPI application",
+      "reproduction": "Send GET /api/v1/priorities/",
+      "expected": "200 OK (or appropriate response)",
+      "actual": "404 Not Found",
+      "severity": "High"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Route /rule-versions/ exists but is not mounted in the FastAPI application",
+      "reproduction": "Send GET /api/v1/rule-versions/",
+      "expected": "200 OK (or appropriate response)",
+      "actual": "404 Not Found",
+      "severity": "High"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Route /slots/ exists but is not mounted in the FastAPI application",
+      "reproduction": "Send GET /api/v1/slots/",
+      "expected": "200 OK (or appropriate response)",
+      "actual": "404 Not Found",
+      "severity": "High"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/schedules/{schedule_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/schedules/{schedule_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/contact-requests/{request_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/contact-requests/{request_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/patients/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/patients/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/audit-logs/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/audit-logs/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/assignments/{assignment_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/assignments/{assignment_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/assignments/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/assignments/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/notifications/{notification_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/notifications/{notification_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/follow-up-actions/{action_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/follow-up-actions/{action_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/readings/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/readings/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/patients/{profile_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/patients/{profile_id} appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/contact-requests/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/contact-requests/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/conditions/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/conditions/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/help-requests/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/help-requests/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/alert-readings/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/alert-readings/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/follow-up-actions/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/follow-up-actions/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/schedules/",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/schedules/ appears multiple times",
+      "severity": "Medium"
+    },
+    {
+      "file": "main.py",
+      "function": "include_router",
+      "problem": "Duplicate route registration: /api/v1/conditions/{condition_id}",
+      "reproduction": "Check main.py for duplicate include_router calls",
+      "expected": "Each route registered once",
+      "actual": "Route /api/v1/conditions/{condition_id} appears multiple times",
+      "severity": "Medium"
+    }
+  ],
+  "workflow": [
+    [
+      "Register patient",
+      true
+    ],
+    [
+      "Prepare doctor",
+      true
+    ],
+    [
+      "Login patient",
+      true
+    ],
+    [
+      "Login doctor",
+      true
+    ],
+    [
+      "Get patient profile",
+      true
+    ],
+    [
+      "Get doctor profile",
+      true
+    ],
+    [
+      "Create assignment",
+      true
+    ],
+    [
+      "Configure monitoring mode",
+      false
+    ],
+    [
+      "Configure schedule",
+      false
+    ],
+    [
+      "Submit reading",
+      true
+    ],
+    [
+      "Verify reading retrieval",
+      true
+    ],
+    [
+      "Retrieve reading history",
+      true
+    ],
+    [
+      "Trend analysis",
+      false
+    ],
+    [
+      "Check alerts",
+      false
+    ],
+    [
+      "Priority assessment",
+      false
+    ],
+    [
+      "Doctor login",
+      true
+    ],
+    [
+      "Retrieve assigned patients",
+      true
+    ],
+    [
+      "Doctor priority queue",
+      false
+    ],
+    [
+      "Open patient details (doctor)",
+      false
+    ],
+    [
+      "Review patient case",
+      false
+    ],
+    [
+      "Create follow-up action",
+      false
+    ],
+    [
+      "Submit help request",
+      true
+    ],
+    [
+      "Contact request workflow",
+      false
+    ],
+    [
+      "Check notifications",
+      true
+    ],
+    [
+      "Generate report",
+      false
+    ]
+  ]
+}
