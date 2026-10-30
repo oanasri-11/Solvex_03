@@ -1,6 +1,5 @@
 import React from "react";
 import { AppProvider, useApp } from "./context/AppContext";
-import { DevNavBar } from "./components/common/DevNavBar";
 import { DoctorLayout } from "./components/layout/DoctorLayout";
 import { PatientLayout } from "./components/layout/PatientLayout";
 
@@ -78,9 +77,6 @@ export function App() {
   return (
     <AppProvider>
       <div className="min-h-screen flex flex-col font-sans antialiased text-slate-900 bg-[#f8fafc]">
-        {/* Navigation & Showcase Bar */}
-        {/* <DevNavBar /> */}
-
         {/* App Main Body */}
         <div className="flex-1">
           <MainRouter />
