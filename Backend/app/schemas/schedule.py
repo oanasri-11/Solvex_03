@@ -11,7 +11,7 @@ class MeasurementScheduleBase(BaseModel):
     frequency: str
     time_of_day: Optional[str] = None
     days_of_week: Optional[Any] = None
-    is_active: bool
+    is_active: bool = True
 
 
 class MeasurementScheduleCreate(MeasurementScheduleBase):

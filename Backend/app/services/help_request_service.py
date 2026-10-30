@@ -23,7 +23,7 @@ from app.schemas.help_request import (
 
 def create_patient_help_request(
     db: Session, request_in: PatientHelpRequestCreate
-) -> PatientHelpRequest:
+) -> Optional[PatientHelpRequest]:
     """Submit a help request. Verifies the patient exists."""
     try:
         patient = (
@@ -31,11 +31,12 @@ def create_patient_help_request(
         )
         if not patient:
             return None
+        status = getattr(request_in, "status", None) or "open"
         db_request = PatientHelpRequest(
             patient_id=request_in.patient_id,
             type=request_in.type,
-            status=request_in.status,
-            description=request_in.description,
+            status=status,
+            description=getattr(request_in, "description", None),
         )
         db.add(db_request)
         db.commit()
@@ -75,10 +76,10 @@ def cancel_patient_help_request(db: Session, request_id: int) -> Optional[Patien
         db_request = get_patient_help_request_by_id(db, request_id)
         if not db_request:
             return None
-        if db_request.status in ("done", "canceled"):
+        if db_request.status in ("done", "canceled", "resolved", "closed"):
             return None
-        db_request.status = "canceled"
-        db_request.resolved_at = datetime.utcnow()
+        db_request.status = "canceled"# type: ignore
+        db_request.resolved_at = datetime.utcnow()# type: ignore
         db.add(db_request)
         db.commit()
         db.refresh(db_request)

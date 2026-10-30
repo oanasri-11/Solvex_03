@@ -1,5 +1,9 @@
+"""Database session and engine setup."""
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker
+
+from app.db.base import Base
 
 # SQLite database file (project root)
 SQLALCHEMY_DATABASE_URL = "sqlite:///./app.db"
@@ -17,9 +21,6 @@ SessionLocal = sessionmaker(
     bind=engine
 )
 
-# Base class for all models
-Base = declarative_base()
-
 
 # Dependency for FastAPI routes
 def get_db():
@@ -28,3 +29,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+__all__ = ["engine", "SessionLocal", "Base", "get_db", "SQLALCHEMY_DATABASE_URL"]

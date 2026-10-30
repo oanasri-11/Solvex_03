@@ -1,5 +1,19 @@
 """Pydantic schemas package: re-exports every entity schema."""
 
+from app.schemas.auth import (
+    LoginRequest,
+    PasswordChangeRequest,
+    RefreshTokenRequest,
+    Token,
+    TokenPayload,
+)
+from app.schemas.common import (
+    ErrorResponse,
+    IdResponse,
+    MessageResponse,
+    PaginatedResponse,
+    PaginationParams,
+)
 from app.schemas.alert import (
     AlertBase,
     AlertCreate,
@@ -116,6 +130,16 @@ from app.schemas.user import (
 )
 
 __all__ = [
+    "LoginRequest",
+    "PasswordChangeRequest",
+    "RefreshTokenRequest",
+    "Token",
+    "TokenPayload",
+    "ErrorResponse",
+    "IdResponse",
+    "MessageResponse",
+    "PaginatedResponse",
+    "PaginationParams",
     "AlertBase",
     "AlertCreate",
     "AlertOut",

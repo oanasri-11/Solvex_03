@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.PatientMonitoringMode import PatientMonitoringMode
-from app.models.PatientProfile import PatientProfile
+from app.models.patientprofile import PatientProfile
 from app.schemas.monitoring_mode import (
     PatientMonitoringModeCreate,
     PatientMonitoringModeUpdate,
@@ -33,7 +33,7 @@ def create_monitoring_mode(db: Session, mode_in: PatientMonitoringModeCreate) ->
             .first()
         )
         if existing:
-            existing.mode = mode_in.mode
+            existing.mode = mode_in.mode# type: ignore
             db.add(existing)
             db.commit()
             db.refresh(existing)

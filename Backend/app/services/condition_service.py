@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.PatientCondition import PatientCondition
-from app.models.PatientProfile import PatientProfile
+from app.models.patientprofile import PatientProfile
 from app.schemas.condition import (
     PatientConditionCreate,
     PatientConditionUpdate,
@@ -94,7 +94,7 @@ def delete_patient_condition(db: Session, condition_id: int) -> Optional[Patient
         db_condition = get_patient_condition_by_id(db, condition_id)
         if not db_condition:
             return None
-        db_condition.is_active = False
+        db_condition.is_active = False# type: ignore
         db.add(db_condition)
         db.commit()
         db.refresh(db_condition)

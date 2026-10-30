@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.Alert import Alert
-from app.models.patientprofile import PatientProfile
+from app.models.PatientProfile import PatientProfile# type: ignore
 from app.schemas.alert import AlertCreate, AlertUpdate, AlertOut
 
 
@@ -92,8 +92,8 @@ def acknowledge_alert(db: Session, alert_id: int, acknowledged_by: int) -> Optio
             return None
         if db_alert.status not in ("raised", "delivered", "new", "open"):
             return None
-        db_alert.status = "acknowledged"
-        db_alert.acknowledged_at = datetime.utcnow()
+        db_alert.status = "acknowledged"# type: ignore
+        db_alert.acknowledged_at = datetime.utcnow()# type: ignore
         db.add(db_alert)
         db.commit()
         db.refresh(db_alert)
@@ -111,8 +111,8 @@ def close_alert(db: Session, alert_id: int, closed_by: int) -> Optional[Alert]:
             return None
         if db_alert.status not in ("raised", "delivered", "acknowledged", "new", "open"):
             return None
-        db_alert.status = "closed"
-        db_alert.resolved_at = datetime.utcnow()
+        db_alert.status = "closed"# type: ignore
+        db_alert.resolved_at = datetime.utcnow()# type: ignore
         db.add(db_alert)
         db.commit()
         db.refresh(db_alert)

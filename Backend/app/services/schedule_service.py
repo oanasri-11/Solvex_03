@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.MeasurementSchedule import MeasurementSchedule
-from app.models.PatientProfile import PatientProfile
+from app.models.patientprofile import PatientProfile
 from app.schemas.schedule import (
     MeasurementScheduleCreate,
     MeasurementScheduleUpdate,
@@ -109,7 +109,7 @@ def deactivate_measurement_schedule(db: Session, schedule_id: int) -> Optional[M
         db_schedule = get_measurement_schedule_by_id(db, schedule_id)
         if not db_schedule:
             return None
-        db_schedule.is_active = False
+        db_schedule.is_active = False# type: ignore
         db.add(db_schedule)
         db.commit()
         db.refresh(db_schedule)

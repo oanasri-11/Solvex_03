@@ -10,7 +10,7 @@ class AlertBase(BaseModel):
     patient_id: int
     alert_type: str
     severity: str
-    status: str
+    status: str = "new"
     message: Optional[str] = None
 
 

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 class CaseReviewBase(BaseModel):
     patient_id: int
     reviewer_id: Optional[int] = None
-    status: str
+    status: str = "draft"
     reviewed_at: Optional[datetime] = None
     summary: Optional[str] = None
 

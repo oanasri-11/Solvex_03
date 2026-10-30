@@ -11,7 +11,7 @@ class NotificationBase(BaseModel):
     type: str
     title: str
     message: Optional[str] = None
-    is_read: bool
+    is_read: bool = False
 
 
 class NotificationCreate(NotificationBase):

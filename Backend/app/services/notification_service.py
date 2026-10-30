@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.Notification import Notification
-from app.models.User import User
+from app.models.user import User
 from app.schemas.notification import (
     NotificationCreate,
     NotificationUpdate,
@@ -93,7 +93,7 @@ def update_notification(
         for field, value in update_data.items():
             setattr(db_notification, field, value)
         if update_data.get("is_read") is True and db_notification.read_at is None:
-            db_notification.read_at = datetime.utcnow()
+            db_notification.read_at = datetime.utcnow()# type: ignore
         db.add(db_notification)
         db.commit()
         db.refresh(db_notification)
@@ -109,8 +109,8 @@ def mark_notification_read(db: Session, notification_id: int) -> Optional[Notifi
         db_notification = get_notification_by_id(db, notification_id)
         if not db_notification:
             return None
-        db_notification.is_read = True
-        db_notification.read_at = datetime.utcnow()
+        db_notification.is_read = True# type: ignore
+        db_notification.read_at = datetime.utcnow()# type: ignore
         db.add(db_notification)
         db.commit()
         db.refresh(db_notification)
@@ -130,8 +130,8 @@ def mark_all_read(db: Session, user_id: int) -> int:
         )
         now = datetime.utcnow()
         for item in unread_notifications:
-            item.is_read = True
-            item.read_at = now
+            item.is_read = True# type: ignore
+            item.read_at = now# type: ignore
         db.commit()
         return len(unread_notifications)
     except SQLAlchemyError:

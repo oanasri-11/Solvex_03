@@ -10,7 +10,7 @@ class RuleVersionBase(BaseModel):
     version: str
     rule_name: str
     rule_definition: Optional[Any] = None
-    is_active: bool
+    is_active: bool = False
 
 
 class RuleVersionCreate(RuleVersionBase):

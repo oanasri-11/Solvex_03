@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 class FollowUpActionBase(BaseModel):
     patient_id: int
     type: str
-    status: str
+    status: str = "pending"
     due_date: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     notes: Optional[str] = None

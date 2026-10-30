@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.RuleVersion import RuleVersion
-from app.models.User import User
+from app.models.user import User
 from app.schemas.rule_version import RuleVersionCreate, RuleVersionUpdate, RuleVersionOut
 
 
@@ -68,7 +68,7 @@ def update_rule_version(
         db_version = get_rule_version_by_id(db, version_id)
         if not db_version:
             return None
-        if db_version.is_active:
+        if db_version.is_active:# type: ignore
             return None
         update_data = version_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
@@ -91,7 +91,7 @@ def approve_rule_version(db: Session, version_id: int, approved_by: int) -> Opti
         user = db.query(User).filter(User.id == approved_by).first()
         if not user:
             return None
-        db_version.is_active = False
+        db_version.is_active = False# type: ignore
         db.add(db_version)
         db.commit()
         db.refresh(db_version)
@@ -112,8 +112,8 @@ def activate_rule_version(db: Session, version_id: int) -> Optional[RuleVersion]
             db.query(RuleVersion).filter(RuleVersion.is_active == True).all()  # noqa: E712
         )
         for v in active_versions:
-            v.is_active = False
-        db_version.is_active = True
+            v.is_active = False# type: ignore
+        db_version.is_active = True# type: ignore
         db.add(db_version)
         db.commit()
         db.refresh(db_version)

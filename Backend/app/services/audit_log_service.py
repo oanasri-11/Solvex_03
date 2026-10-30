@@ -11,11 +11,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.Auditlog import AuditLog
-from app.models.user import User
+from app.models.User import User# type: ignore
 from app.schemas.audit_log import AuditLogCreate, AuditLogUpdate, AuditLogOut
 
 
-def create_audit_log_entry(db: Session, entry_in: AuditLogCreate) -> AuditLog:
+def create_audit_log_entry(db: Session, entry_in: AuditLogCreate) -> Optional[AuditLog]:
     """Append an audit log entry. Verifies the actor exists when set."""
     try:
         if entry_in.user_id is not None:
@@ -26,9 +26,9 @@ def create_audit_log_entry(db: Session, entry_in: AuditLogCreate) -> AuditLog:
             user_id=entry_in.user_id,
             action=entry_in.action,
             table_name=entry_in.table_name,
-            record_id=entry_in.record_id,
-            old_values=entry_in.old_values,
-            new_values=entry_in.new_values,
+            record_id=getattr(entry_in, "record_id", None),
+            old_values=getattr(entry_in, "old_values", None),
+            new_values=getattr(entry_in, "new_values", None),
         )
         db.add(db_entry)
         db.commit()

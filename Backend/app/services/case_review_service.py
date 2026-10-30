@@ -16,26 +16,27 @@ from app.models.user import User
 from app.schemas.case_review import CaseReviewCreate, CaseReviewUpdate, CaseReviewOut
 
 
-def create_case_review(db: Session, review_in: CaseReviewCreate) -> CaseReview:
+def create_case_review(db: Session, review_in: CaseReviewCreate) -> Optional[CaseReview]:
     """Create a case review (status, note, optional alert acknowledgment/closure).
     Verifies the patient and reviewer exist."""
     try:
         patient = (
             db.query(PatientProfile).filter(PatientProfile.id == review_in.patient_id).first()
         )
+        if not patient:
+            return None
         reviewer = None
         if review_in.reviewer_id is not None:
             reviewer = db.query(User).filter(User.id == review_in.reviewer_id).first()
             if not reviewer:
                 return None
-        if not patient:
-            return None
+        status = getattr(review_in, "status", None) or "draft"
         db_review = CaseReview(
             patient_id=review_in.patient_id,
             reviewer_id=review_in.reviewer_id,
-            status=review_in.status,
-            reviewed_at=review_in.reviewed_at,
-            summary=review_in.summary,
+            status=status,
+            reviewed_at=getattr(review_in, "reviewed_at", None),
+            summary=getattr(review_in, "summary", None),
         )
         db.add(db_review)
         db.commit()

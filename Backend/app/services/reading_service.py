@@ -5,6 +5,7 @@ Readings are immutable: there is no PATCH, PUT or DELETE. A correction creates a
 reading that references the original (recheck_of_reading_id).
 """
 
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -21,7 +22,7 @@ from app.schemas.measurement import (
 
 def create_blood_pressure_reading(
     db: Session, reading_in: BloodPressureReadingCreate
-) -> BloodPressureReading:
+) -> Optional[BloodPressureReading]:
     """Save a new blood pressure reading. Verifies the patient exists."""
     try:
         patient = (
@@ -29,13 +30,14 @@ def create_blood_pressure_reading(
         )
         if not patient:
             return None
+        measured_at = getattr(reading_in, "measured_at", None) or datetime.utcnow()
         db_reading = BloodPressureReading(
             patient_id=reading_in.patient_id,
             systolic=reading_in.systolic,
             diastolic=reading_in.diastolic,
-            measured_at=reading_in.measured_at,
-            recheck_of_reading_id=reading_in.recheck_of_reading_id,
-            notes=reading_in.notes,
+            measured_at=measured_at,
+            recheck_of_reading_id=getattr(reading_in, "recheck_of_reading_id", None),
+            notes=getattr(reading_in, "notes", None),
         )
         db.add(db_reading)
         db.commit()

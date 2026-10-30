@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict
 class DoctorPatientAssignmentBase(BaseModel):
     doctor_id: int
     patient_id: int
-    assigned_at: datetime
-    is_active: bool
+    assigned_at: Optional[datetime] = None
+    is_active: bool = True
 
 
 class DoctorPatientAssignmentCreate(DoctorPatientAssignmentBase):

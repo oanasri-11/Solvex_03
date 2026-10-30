@@ -20,7 +20,7 @@ from app.schemas.alertreading import (
 )
 
 
-def create_alert_reading(db: Session, link_in: AlertReadingCreate) -> AlertReading:
+def create_alert_reading(db: Session, link_in: AlertReadingCreate) -> Optional[AlertReading]:
     """Link an alert to an evidence reading. Verifies both records exist."""
     try:
         alert = db.query(Alert).filter(Alert.id == link_in.alert_id).first()
@@ -31,6 +31,18 @@ def create_alert_reading(db: Session, link_in: AlertReadingCreate) -> AlertReadi
         )
         if not alert or not reading:
             return None
+
+        existing = (
+            db.query(AlertReading)
+            .filter(
+                AlertReading.alert_id == link_in.alert_id,
+                AlertReading.reading_id == link_in.reading_id,
+            )
+            .first()
+        )
+        if existing:
+            return existing
+
         db_link = AlertReading(
             alert_id=link_in.alert_id,
             reading_id=link_in.reading_id,

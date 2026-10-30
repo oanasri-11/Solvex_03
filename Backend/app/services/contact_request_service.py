@@ -21,7 +21,7 @@ from app.schemas.contact_request import (
 )
 
 
-def create_contact_request(db: Session, request_in: ContactRequestCreate) -> ContactRequest:
+def create_contact_request(db: Session, request_in: ContactRequestCreate) -> Optional[ContactRequest]:
     """Create a contact request (doctor-initiated). Verifies the patient exists."""
     try:
         patient = (
@@ -29,11 +29,12 @@ def create_contact_request(db: Session, request_in: ContactRequestCreate) -> Con
         )
         if not patient:
             return None
+        status = getattr(request_in, "status", None) or "open"
         db_request = ContactRequest(
             patient_id=request_in.patient_id,
-            doctor_id=request_in.doctor_id,
+            doctor_id=getattr(request_in, "doctor_id", None),
             message=request_in.message,
-            status=request_in.status,
+            status=status,
         )
         db.add(db_request)
         db.commit()
@@ -93,8 +94,8 @@ def complete_contact_request(
         db_request = get_contact_request_by_id(db, request_id)
         if not db_request:
             return None
-        db_request.status = "done"
-        db_request.responded_at = datetime.utcnow()
+        db_request.status = "done"# type: ignore
+        db_request.responded_at = datetime.utcnow()# type: ignore
         db.add(db_request)
         db.commit()
         db.refresh(db_request)

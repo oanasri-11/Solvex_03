@@ -6,6 +6,7 @@ POST/PATCH/DELETE; assessments are written by the system and treated as immutabl
 audit-style records.
 """
 
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,7 +24,7 @@ from app.schemas.priority import (
 
 def create_priority_assessment(
     db: Session, assessment_in: PriorityAssessmentCreate
-) -> PriorityAssessment:
+) -> Optional[PriorityAssessment]:
     """Backend-only creation of a priority assessment. Verifies patient and assessor."""
     try:
         patient = (
@@ -35,12 +36,13 @@ def create_priority_assessment(
             assessor = db.query(User).filter(User.id == assessment_in.assessor_id).first()
             if not assessor:
                 return None
+        assessed_at = getattr(assessment_in, "assessed_at", None) or datetime.utcnow()
         db_assessment = PriorityAssessment(
             patient_id=assessment_in.patient_id,
             assessor_id=assessment_in.assessor_id,
             level=assessment_in.level,
-            assessed_at=assessment_in.assessed_at,
-            notes=assessment_in.notes,
+            assessed_at=assessed_at,
+            notes=getattr(assessment_in, "notes", None),
         )
         db.add(db_assessment)
         db.commit()

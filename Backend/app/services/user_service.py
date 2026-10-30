@@ -9,7 +9,7 @@ from typing import Optional
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.models.User import User
+from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate, UserOut
 
 
@@ -93,7 +93,7 @@ def deactivate_user(db: Session, user_id: int) -> Optional[User]:
         db_user = get_user_by_id(db, user_id)
         if not db_user:
             return None
-        db_user.is_active = False
+        db_user.is_active = False# type: ignore
         db.add(db_user)
         db.commit()
         db.refresh(db_user)

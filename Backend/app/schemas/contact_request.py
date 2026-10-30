@@ -10,7 +10,7 @@ class ContactRequestBase(BaseModel):
     patient_id: int
     doctor_id: Optional[int] = None
     message: str
-    status: str
+    status: str = "open"
 
 
 class ContactRequestCreate(ContactRequestBase):

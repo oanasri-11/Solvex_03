@@ -84,7 +84,7 @@ def update_schedule_slot(
         for field, value in update_data.items():
             setattr(db_slot, field, value)
         if db_slot.status in ("completed", "taken") and db_slot.completed_at is None:
-            db_slot.completed_at = datetime.utcnow()
+            db_slot.completed_at = datetime.utcnow()# type: ignore
         db.add(db_slot)
         db.commit()
         db.refresh(db_slot)

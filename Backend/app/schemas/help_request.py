@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 class PatientHelpRequestBase(BaseModel):
     patient_id: int
     type: str
-    status: str
+    status: str = "open"
     description: Optional[str] = None
 
 

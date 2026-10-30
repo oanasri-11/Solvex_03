@@ -9,8 +9,8 @@ from typing import Optional
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.models.PatientProfile import PatientProfile
-from app.models.User import User
+from app.models.patientprofile import PatientProfile
+from app.models.user import User
 from app.schemas.patient import PatientProfileCreate, PatientProfileUpdate, PatientProfileOut
 
 
@@ -98,7 +98,7 @@ def deactivate_patient_profile(db: Session, profile_id: int) -> Optional[Patient
             return None
         db_user = db.query(User).filter(User.id == db_profile.user_id).first()
         if db_user:
-            db_user.is_active = False
+            db_user.is_active = False# type: ignore
             db.add(db_user)
         db.add(db_profile)
         db.commit()

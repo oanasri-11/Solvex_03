@@ -10,7 +10,7 @@ class PriorityAssessmentBase(BaseModel):
     patient_id: int
     assessor_id: Optional[int] = None
     level: str
-    assessed_at: datetime
+    assessed_at: Optional[datetime] = None
     notes: Optional[str] = None
 
 

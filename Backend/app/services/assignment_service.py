@@ -11,8 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.DoctorPatientAssignment import DoctorPatientAssignment
-from app.models.DoctorProfile import DoctorProfile
-from app.models.PatientProfile import PatientProfile
+from app.models.doctorprofile import DoctorProfile
+from app.models.patientprofile import PatientProfile
 from app.schemas.assignment import (
     DoctorPatientAssignmentCreate,
     DoctorPatientAssignmentUpdate,
@@ -48,8 +48,8 @@ def create_assignment(
             .first()
         )
         if existing:
-            existing.is_active = is_active
-            existing.assigned_at = assigned_at
+            existing.is_active = is_active# type: ignore
+            existing.assigned_at = assigned_at# type: ignore
             db.add(existing)
             db.commit()
             db.refresh(existing)
@@ -124,7 +124,7 @@ def end_assignment(db: Session, assignment_id: int) -> Optional[DoctorPatientAss
         db_assignment = get_assignment_by_id(db, assignment_id)
         if not db_assignment:
             return None
-        db_assignment.is_active = False
+        db_assignment.is_active = False# type: ignore
         db.add(db_assignment)
         db.commit()
         db.refresh(db_assignment)
@@ -132,6 +132,27 @@ def end_assignment(db: Session, assignment_id: int) -> Optional[DoctorPatientAss
     except SQLAlchemyError:
         db.rollback()
         raise
+
+
+def is_doctor_assigned(db: Session, doctor_id: int, patient_id: int) -> bool:# type: ignore
+    """Check if an active assignment exists between doctor and patient."""
+    assignment = (
+        db.query(DoctorPatientAssignment)
+        .filter(
+            DoctorPatientAssignment.doctor_id == doctor_id,
+            DoctorPatientAssignment.patient_id == patient_id,
+            DoctorPatientAssignment.is_active == True,  # noqa: E712
+        )
+        .first()
+    )
+    return assignment is not None
+# type: ignore
+
+
+def assert_doctor_has_access(db: Session, doctor_id: int, patient_id: int) -> bool: # type: ignore
+    """Assert active assignment exists; returns True or False."""
+    return is_doctor_assigned(db, doctor_id, patient_id)
+
 
 
 def is_doctor_assigned(db: Session, doctor_id: int, patient_id: int) -> bool:

@@ -11,8 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.DoctorPatientAssignment import DoctorPatientAssignment
-from app.models.DoctorProfile import DoctorProfile
-from app.models.User import User
+from app.models.doctorprofile import DoctorProfile
+from app.models.user import User
 from app.schemas.doctor import DoctorProfileCreate, DoctorProfileUpdate, DoctorProfileOut
 
 
@@ -107,7 +107,7 @@ def deactivate_doctor_profile(db: Session, doctor_id: int) -> Optional[DoctorPro
             return None
         db_user = db.query(User).filter(User.id == db_doctor.user_id).first()
         if db_user:
-            db_user.is_active = False
+            db_user.is_active = False# type: ignore
             db.add(db_user)
         db.add(db_doctor)
         db.commit()

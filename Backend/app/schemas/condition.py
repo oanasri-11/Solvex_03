@@ -11,7 +11,7 @@ class PatientConditionBase(BaseModel):
     condition_name: str
     diagnosed_at: Optional[date] = None
     notes: Optional[str] = None
-    is_active: bool
+    is_active: bool = True
 
 
 class PatientConditionCreate(PatientConditionBase):

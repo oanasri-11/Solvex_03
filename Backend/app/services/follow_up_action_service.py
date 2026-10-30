@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.models.FollowUpAction import FollowUpAction
-from app.models.PatientProfile import PatientProfile
+from app.models.patientprofile import PatientProfile
 from app.schemas.follow_up import (
     FollowUpActionCreate,
     FollowUpActionUpdate,
@@ -79,8 +79,8 @@ def update_follow_up_action(
         update_data = action_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_action, field, value)
-        if db_action.status == "completed" and db_action.completed_at is None:
-            db_action.completed_at = datetime.utcnow()
+        if db_action.status == "completed" and db_action.completed_at is None:# type: ignore
+            db_action.completed_at = datetime.utcnow()# type: ignore
         db.add(db_action)
         db.commit()
         db.refresh(db_action)
@@ -101,10 +101,10 @@ def delete_follow_up_action(db: Session, action_id: int) -> Optional[FollowUpAct
         db_action = get_follow_up_action_by_id(db, action_id)
         if not db_action:
             return None
-        if db_action.status == "completed":
+        if db_action.status == "completed":# type: ignore
             return None
-        db_action.status = "completed"
-        db_action.completed_at = datetime.utcnow()
+        db_action.status = "completed"# type: ignore
+        db_action.completed_at = datetime.utcnow()# type: ignore
         db.add(db_action)
         db.commit()
         db.refresh(db_action)

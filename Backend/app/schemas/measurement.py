@@ -10,7 +10,7 @@ class BloodPressureReadingBase(BaseModel):
     patient_id: int
     systolic: int
     diastolic: int
-    measured_at: datetime
+    measured_at: Optional[datetime] = None
     recheck_of_reading_id: Optional[int] = None
     notes: Optional[str] = None
 

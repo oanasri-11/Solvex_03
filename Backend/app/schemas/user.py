@@ -10,8 +10,8 @@ class UserBase(BaseModel):
     email: str
     full_name: str
     role: str
-    is_active: bool
-    is_verified: bool
+    is_active: bool = True
+    is_verified: bool = False
 
 
 class UserCreate(UserBase):
@@ -24,6 +24,7 @@ class UserUpdate(BaseModel):
     role: Optional[str] = None
     is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
+    password: Optional[str] = None
 
 
 class UserOut(BaseModel):

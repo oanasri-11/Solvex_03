@@ -8,8 +8,8 @@ from pydantic import BaseModel, ConfigDict
 
 class ScheduleSlotBase(BaseModel):
     schedule_id: int
-    scheduled_at: datetime
-    status: str
+    scheduled_at: Optional[datetime] = None
+    status: str = "pending"
     reading_id: Optional[int] = None
     completed_at: Optional[datetime] = None
 
