@@ -1,8 +1,4 @@
-"""Assignment service.
 
-CRUD operations for the DoctorPatientAssignment model, following classic SQLAlchemy syntax.
-Assignments are history records: there is no hard delete, only ending (deactivation).
-"""
 
 from datetime import datetime
 from typing import Optional

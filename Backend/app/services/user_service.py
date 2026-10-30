@@ -1,8 +1,4 @@
-"""User service.
 
-CRUD operations for the User model, following classic SQLAlchemy syntax.
-Password hash is never exposed through the service layer.
-"""
 
 from typing import Optional
 

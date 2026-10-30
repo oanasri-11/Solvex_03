@@ -1,9 +1,4 @@
-"""Monitoring mode service.
 
-CRUD operations for the PatientMonitoringMode model, following classic SQLAlchemy syntax.
-Per the specification, mode records are immutable: there is no PATCH or DELETE on a mode
-record (a change creates a new record that closes the previous one).
-"""
 
 from typing import Optional
 
@@ -83,5 +78,4 @@ def get_all_monitoring_modes(
     return query.offset(skip).limit(limit).all()
 
 
-# Note: update/delete are intentionally omitted. Mode records are immutable per the
-# specification; a mode change creates a new record rather than rewriting the past.
+

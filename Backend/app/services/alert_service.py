@@ -1,10 +1,4 @@
-"""Alert service.
 
-Read operations for the Alert model, following classic SQLAlchemy syntax.
-Alerts are created only by the backend and never deleted. Lifecycle only moves forward
-(raised -> delivered -> acknowledged -> closed). Acknowledge and close recalculate
-priority (handled by the calling service/route layer).
-"""
 
 from datetime import datetime
 from typing import Optional

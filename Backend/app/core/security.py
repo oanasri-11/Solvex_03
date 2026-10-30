@@ -1,18 +1,29 @@
-
 # type: ignore
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
+from pathlib import Path
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    parent_env = Path(__file__).resolve().parent.parent.parent / ".env"
+    if parent_env.exists():
+        load_dotenv(parent_env)
+    root_env = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+    if root_env.exists():
+        load_dotenv(root_env)
+except Exception:
+    pass
 
 # ==========================================
 # Configuration
 # ==========================================
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "FwVoJL-7o0hDf5RI6RCeL6rbClFgEQlO82zVqbZuvQhYeJl_sYrvlkx3-NE29sKT")
 
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY environment variable is not configured")

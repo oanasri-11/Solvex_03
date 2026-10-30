@@ -1,9 +1,4 @@
-"""Doctor service.
 
-CRUD operations for the DoctorProfile model, following classic SQLAlchemy syntax.
-Deactivation is performed through the linked User record (soft delete only) and is
-refused while active doctor-patient assignments exist.
-"""
 
 from typing import Optional
 

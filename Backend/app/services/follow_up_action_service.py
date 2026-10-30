@@ -1,10 +1,4 @@
-"""Follow-up action service.
 
-CRUD operations for the FollowUpAction model, following classic SQLAlchemy syntax.
-Deletion is a soft delete and is only allowed when the action is not completed.
-Per the specification a follow-up action belongs to a case review; this implementation
-uses the existing patient_id foreign key because the model carries no review_id field.
-"""
 
 from datetime import datetime
 from typing import Optional

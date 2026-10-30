@@ -1,9 +1,4 @@
-"""Reading service.
 
-CRUD operations for the BloodPressureReading model, following classic SQLAlchemy syntax.
-Readings are immutable: there is no PATCH, PUT or DELETE. A correction creates a new
-reading that references the original (recheck_of_reading_id).
-"""
 
 from datetime import datetime
 from typing import Optional
@@ -69,7 +64,3 @@ def get_all_blood_pressure_readings(
         query = query.filter(BloodPressureReading.patient_id == patient_id)
     return query.order_by(BloodPressureReading.created_at.desc()).offset(skip).limit(limit).all()
 
-
-# Note: update/delete are intentionally omitted. Readings are immutable per the
-# specification. A correction is a new POST with recheck_of_reading_id set; the
-# original record stays intact.

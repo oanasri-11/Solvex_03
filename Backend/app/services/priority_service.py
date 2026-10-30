@@ -1,10 +1,4 @@
-"""Priority service.
 
-Read operations for the PriorityAssessment model, following classic SQLAlchemy syntax.
-Priority is backend-computed only and never exposed to patients. There is no client-side
-POST/PATCH/DELETE; assessments are written by the system and treated as immutable
-audit-style records.
-"""
 
 from datetime import datetime
 from typing import Optional
@@ -78,5 +72,4 @@ def get_all_priority_assessments(
     return query.order_by(PriorityAssessment.assessed_at.desc()).offset(skip).limit(limit).all()
 
 
-# Note: update/delete are intentionally omitted. Priority assessments are backend-computed
-# and immutable; they are never exposed to patients and never edited or deleted.
+

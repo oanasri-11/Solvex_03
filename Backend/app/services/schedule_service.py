@@ -1,9 +1,4 @@
-"""Schedule service.
 
-CRUD operations for the MeasurementSchedule model, following classic SQLAlchemy syntax.
-Only one schedule is active per patient. Deactivation is soft (is_active = False);
-there is no hard delete.
-"""
 
 from typing import Optional
 

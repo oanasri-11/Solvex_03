@@ -1,10 +1,4 @@
-"""Help request service.
 
-CRUD operations for the PatientHelpRequest model, following classic SQLAlchemy syntax.
-A help request creates the linked contact request automatically. Idempotency is
-enforced at the route layer (Idempotency-Key header). There is no PATCH or DELETE;
-a request can be cancelled (withdrawn) while the contact request is still open.
-"""
 
 from datetime import datetime
 from typing import Optional
@@ -89,5 +83,4 @@ def cancel_patient_help_request(db: Session, request_id: int) -> Optional[Patien
         raise
 
 
-# Note: update/delete are intentionally omitted. Help requests have no PATCH or DELETE
-# per the specification; cancellation is expressed as a status change.
+# 

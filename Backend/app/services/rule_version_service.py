@@ -1,9 +1,4 @@
-"""Rule version service.
 
-CRUD operations for the RuleVersion model, following classic SQLAlchemy syntax.
-Rule versions are never deleted; an active version is only superseded. Approve and
-activate are expressed as status transitions on the record.
-"""
 
 from datetime import datetime
 from typing import Optional
@@ -123,5 +118,4 @@ def activate_rule_version(db: Session, version_id: int) -> Optional[RuleVersion]
         raise
 
 
-# Note: delete is intentionally omitted. Rule versions are never deleted; they are
-# superseded per the specification.
+

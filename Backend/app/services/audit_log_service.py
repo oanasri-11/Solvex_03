@@ -1,9 +1,4 @@
-"""Audit log service.
 
-Operations for the AuditLog model, following classic SQLAlchemy syntax.
-The audit log is append-only and written by the service layer. There is no POST,
-PATCH or DELETE through the API.
-"""
 
 from typing import Optional
 

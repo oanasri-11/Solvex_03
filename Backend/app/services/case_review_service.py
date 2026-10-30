@@ -1,9 +1,4 @@
-"""Case review service.
 
-CRUD operations for the CaseReview model, following classic SQLAlchemy syntax.
-Reviews are an audit trail: there is no DELETE. Saving a review recalculates priority
-(handled by the calling service/route layer).
-"""
 
 from typing import Optional
 
@@ -89,5 +84,3 @@ def update_case_review(
         raise
 
 
-# Note: delete is intentionally omitted. Case reviews are an audit trail and are
-# never deleted per the specification.

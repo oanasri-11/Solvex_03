@@ -1,8 +1,4 @@
-"""Condition service.
 
-CRUD operations for the PatientCondition model, following classic SQLAlchemy syntax.
-Deletion is a soft delete (is_active = False); clinical data is never hard-deleted.
-"""
 
 from typing import Optional
 

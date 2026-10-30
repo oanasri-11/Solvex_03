@@ -1,9 +1,4 @@
-"""Notification service.
 
-CRUD operations for the Notification model, following classic SQLAlchemy syntax.
-Notifications are created by the system only. Dismissal (delete) is a convenience
-operation on own notifications; notifications are not clinical data.
-"""
 
 from datetime import datetime
 from typing import Optional

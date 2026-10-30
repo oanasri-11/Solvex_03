@@ -1,9 +1,4 @@
-"""Contact request service.
 
-CRUD operations for the ContactRequest model, following classic SQLAlchemy syntax.
-Contact requests are never deleted. Status moves open -> in_progress -> done;
-completion links an outcome review.
-"""
 
 from datetime import datetime
 from typing import Optional
@@ -104,6 +99,3 @@ def complete_contact_request(
         db.rollback()
         raise
 
-
-# Note: delete is intentionally omitted. Contact requests are never deleted per the
-# specification.
