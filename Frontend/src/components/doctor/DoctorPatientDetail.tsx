@@ -108,6 +108,26 @@ export const DoctorPatientDetail: React.FC = () => {
     }
   };
 
+  // Transform patient readings for BP trend chart
+  const chartPoints = readings && readings.length > 0
+    ? readings.slice(0, 14).reverse().map(r => ({
+        label: r.date.split(',')[0] || r.date,
+        systolic: r.systolic,
+        diastolic: r.diastolic,
+        isManual: r.isManual,
+        tooltipText: `${r.date} · ${r.systolic}/${r.diastolic} mmHg`,
+      }))
+    : undefined;
+
+  if (!selectedPatient || !selectedPatient.id) {
+    return (
+      <div className="p-12 text-center text-slate-500">
+        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+        <p>Loading patient record from live backend...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Toast Notification */}
@@ -187,7 +207,7 @@ export const DoctorPatientDetail: React.FC = () => {
         </div>
 
         <div className="pt-2">
-          <BPLineChart />
+          <BPLineChart data={chartPoints} />
         </div>
       </div>
 

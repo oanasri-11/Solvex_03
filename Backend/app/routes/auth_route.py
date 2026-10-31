@@ -61,11 +61,11 @@ def register(
     try:
         user = register_user(db, user_data)
         return RegisterResponse(
-            id=user.id,
+            id=user.id, #type : ignore
             email=user.email,
-            role=user.role,
-            is_active=user.is_active,
-            email_verified=user.email_verified,
+            role=user.role,# type : ignore
+            is_active=user.is_active,# type : ignore
+            email_verified=user.email_verified,# type : ignore
             message="Account registered successfully",
         )
     except ValueError as e:

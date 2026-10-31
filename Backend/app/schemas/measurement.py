@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class BloodPressureReadingBase(BaseModel):
-    patient_id: int
+    patient_id: Optional[int] = None
     systolic: int = Field(..., ge=40, le=300)
     diastolic: int = Field(..., ge=30, le=200)
     pulse: Optional[int] = Field(None, ge=30, le=250)

@@ -1,3 +1,4 @@
+import { Activity } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface DataPoint {
@@ -20,13 +21,7 @@ interface BPLineChartProps {
 }
 
 export const BPLineChart: React.FC<BPLineChartProps> = ({
-  data = [
-    { label: 'Oct 18', systolic: 148, diastolic: 88 },
-    { label: 'Oct 21', systolic: 168, diastolic: 102, isHighlighted: true, tooltipText: 'Oct 21 · 168/102' },
-    { label: 'Oct 24 · AM', systolic: 152, diastolic: 92 },
-    { label: 'Oct 24 · PM', systolic: 158, diastolic: 96 },
-    { label: 'Oct 25', systolic: 164, diastolic: 98 }
-  ],
+  data = [],
   showTargetZone = false,
   targetMin = 115,
   targetMax = 130,
@@ -35,8 +30,17 @@ export const BPLineChart: React.FC<BPLineChartProps> = ({
   variant = 'doctor'
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(
-    data.findIndex(d => d.isHighlighted) !== -1 ? data.findIndex(d => d.isHighlighted) : null
+    data && data.length > 0 ? (data.findIndex(d => d.isHighlighted) !== -1 ? data.findIndex(d => d.isHighlighted) : null) : null
   );
+
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-44 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+        <Activity className="w-6 h-6 mb-2 text-slate-300" />
+        <p className="text-xs font-medium">No blood pressure readings recorded yet for this period.</p>
+      </div>
+    );
+  }
 
   const minY = 60;
   const maxY = 180;

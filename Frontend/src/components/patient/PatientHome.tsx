@@ -44,15 +44,7 @@ export const PatientHome: React.FC = () => {
         diastolic: r.diastolic,
         isManual: r.isManual,
       }))
-    : [
-        { label: '18 Oct', systolic: 134, diastolic: 88 },
-        { label: '19 Oct', systolic: 133, diastolic: 86 },
-        { label: '20 Oct', systolic: 132, diastolic: 85 },
-        { label: '21 Oct', systolic: 130, diastolic: 84, isManual: true },
-        { label: '22 Oct', systolic: 129, diastolic: 83 },
-        { label: '23 Oct', systolic: 128, diastolic: 82 },
-        { label: '24 Oct', systolic: 128, diastolic: 82, isManual: true }
-      ];
+    : [];
 
   const firstName = currentUser?.full_name ? currentUser.full_name.split(' ')[0] : 'Amina';
 

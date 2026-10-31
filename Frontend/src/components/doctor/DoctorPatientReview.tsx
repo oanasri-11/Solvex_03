@@ -74,6 +74,15 @@ export const DoctorPatientReview: React.FC = () => {
       ? Math.round((rawAdh as any).adherence_rate * 100)
       : (selectedPatient.adherenceRate || 86);
 
+  if (!selectedPatient || !selectedPatient.id) {
+    return (
+      <div className="p-12 text-center text-slate-500">
+        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-teal-600" />
+        <p>Loading patient review from live backend...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
       {/* Toast */}

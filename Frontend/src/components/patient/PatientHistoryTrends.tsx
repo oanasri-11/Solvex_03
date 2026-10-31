@@ -26,22 +26,15 @@ export const PatientHistoryTrends: React.FC = () => {
     setTimeout(() => setReportSent(false), 3500);
   };
 
-  const chartPoints = [
-    { label: '11 Oct', sys: 138, dia: 86, type: 'borderline' },
-    { label: '12 Oct', sys: 136, dia: 84, type: 'borderline' },
-    { label: '13 Oct', sys: 142, dia: 88, type: 'high' },
-    { label: '14 Oct', sys: 139, dia: 87, type: 'borderline' },
-    { label: '15 Oct', sys: 128, dia: 80, type: 'target' },
-    { label: '16 Oct', sys: 131, dia: 82, type: 'borderline' },
-    { label: '17 Oct', sys: 126, dia: 79, type: 'target' },
-    { label: '18 Oct', sys: 129, dia: 81, type: 'target' },
-    { label: '19 Oct', sys: 136, dia: 83, type: 'borderline' },
-    { label: '20 Oct', sys: 125, dia: 78, type: 'target' },
-    { label: '21 Oct', sys: 124, dia: 77, type: 'target' },
-    { label: '22 Oct', sys: 135, dia: 83, type: 'borderline' },
-    { label: '23 Oct', sys: 132, dia: 81, type: 'borderline' },
-    { label: 'Today', sys: 128, dia: 80, type: 'target', isToday: true }
-  ];
+  const chartPoints = aminaReadings && aminaReadings.length > 0
+    ? aminaReadings.slice(0, 14).reverse().map(r => ({
+        label: r.date.split(',')[0] || r.date,
+        sys: r.systolic,
+        dia: r.diastolic,
+        type: r.systolic >= 140 || r.diastolic >= 90 ? 'high' : r.systolic >= 130 ? 'borderline' : 'target',
+        isToday: r.date.toLowerCase().includes('today')
+      }))
+    : [];
 
   return (
     <div className="space-y-6 animate-fadeIn pb-12">
@@ -408,20 +401,6 @@ export const PatientHistoryTrends: React.FC = () => {
             </h3>
           </div>
 
-          {/* Doctor Profile Card */}
-          <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-4 flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-teal-100 text-teal-900 font-bold text-sm flex items-center justify-center shrink-0 border border-teal-200">
-              PL
-            </div>
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm">Dr Philippe Laurent</h4>
-              <p className="text-xs text-slate-500">Lead cardiologist • University hospital</p>
-              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                Remote monitoring active
-              </span>
-            </div>
-          </div>
 
           {/* Summary Metadata */}
           <div className="space-y-3 text-xs">

@@ -11,13 +11,52 @@ import type {
   BPReading, 
   SettingsState 
 } from '../types';
-import { 
-  initialPatients, 
-  initialDoctorAlerts, 
-  initialPatientAlerts, 
-  initialAminaReadings, 
-  initialMarcDupuisReadings 
-} from '../data/mockData';
+const defaultEmptyPatient: Patient = {
+  id: '',
+  code: '',
+  name: 'No patient selected',
+  initials: '--',
+  age: 0,
+  birthDate: '',
+  gender: 'Unknown',
+  clinicalStatus: 'within_target',
+  statusLabel: 'Normal',
+  statusSubtext: '',
+  latestSystolic: 0,
+  latestDiastolic: 0,
+  latestPulse: 0,
+  latestReadingTime: 'No readings',
+  isTelemonitoring: false,
+};
+
+const defaultEmptyDoctorAlert: DoctorAlert = {
+  id: '',
+  patientId: '',
+  patientName: 'No Alert',
+  patientInitials: '--',
+  patientAge: 0,
+  patientCode: '',
+  title: 'No Alerts',
+  description: 'No active clinical alerts.',
+  priority: 'under_follow_up',
+  priorityLabel: 'Normal',
+  timeAgo: '',
+  isAcknowledged: true,
+  telemonitoring: false,
+};
+
+const defaultEmptyPatientAlert: PatientAlert = {
+  id: '',
+  code: '',
+  category: 'Readings',
+  title: 'No Active Alerts',
+  description: 'Your readings are within expected clinical range.',
+  dateTime: '',
+  level: 'information',
+  levelLabel: 'Normal',
+  status: 'review_needed',
+  statusLabel: 'Active',
+};
 import { authService, type UserMe } from '../services/authService';
 import { doctorService } from '../services/doctorService';
 import { alertService } from '../services/alertService';
@@ -105,18 +144,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState<boolean>(true);
 
-  // Cohort & alerts data
-  const [patients, setPatients] = useState<Patient[]>(initialPatients);
-  const [selectedPatient, setSelectedPatient] = useState<Patient>(initialPatients[1]); // Default Marc Dupuis
+  // Cohort & alerts data (Live Backend Driven)
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient>(defaultEmptyPatient);
 
-  const [doctorAlerts, setDoctorAlerts] = useState<DoctorAlert[]>(initialDoctorAlerts);
-  const [selectedDoctorAlert, setSelectedDoctorAlert] = useState<DoctorAlert>(initialDoctorAlerts[0]);
+  const [doctorAlerts, setDoctorAlerts] = useState<DoctorAlert[]>([]);
+  const [selectedDoctorAlert, setSelectedDoctorAlert] = useState<DoctorAlert>(defaultEmptyDoctorAlert);
 
-  const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>(initialPatientAlerts);
-  const [selectedPatientAlert, setSelectedPatientAlert] = useState<PatientAlert>(initialPatientAlerts[2]);
+  const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>([]);
+  const [selectedPatientAlert, setSelectedPatientAlert] = useState<PatientAlert>(defaultEmptyPatientAlert);
 
-  const [aminaReadings, setAminaReadings] = useState<BPReading[]>(initialAminaReadings);
-  const [marcDpuisReadings] = useState<BPReading[]>(initialMarcDupuisReadings);
+  const [aminaReadings, setAminaReadings] = useState<BPReading[]>([]);
+  const [marcDpuisReadings] = useState<BPReading[]>([]);
 
   const [settings, setSettings] = useState<SettingsState>({
     textSize: 'large',
@@ -342,10 +381,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       await login('dr.karim@clinic.com', 'Password123!', 'doctor');
     } catch (err) {
-      console.warn('Backend login for dr.karim@clinic.com failed, falling back to mock view:', err);
-      setRole('doctor');
-      setDoctorView('home');
-      setAppView('doctor');
+      console.error('Backend login for dr.karim@clinic.com failed:', err);
     }
   };
 
@@ -353,10 +389,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       await login('amina.benali@email.com', 'Password123!', 'patient');
     } catch (err) {
-      console.warn('Backend login for amina.benali@email.com failed, falling back to mock view:', err);
-      setRole('patient');
-      setPatientView('home');
-      setAppView('patient');
+      console.error('Backend login for amina.benali@email.com failed:', err);
     }
   };
 
