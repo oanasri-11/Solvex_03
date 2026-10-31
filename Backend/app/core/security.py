@@ -24,7 +24,7 @@ except Exception:
 # Configuration
 # ==========================================
 
-SECRET_KEY = os.getenv("SECRET_KEY", "FwVoJL-7o0hDf5RI6RCeL6rbClFgEQlO82zVqbZuvQhYeJl_sYrvlkx3-NE29sKT")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-CHANGE-ME-in-production")
 
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY environment variable is not configured")

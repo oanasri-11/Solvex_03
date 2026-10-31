@@ -1,1 +1,0 @@
-"""Core package: configuration, security, dependencies, exceptions, error handlers."""
