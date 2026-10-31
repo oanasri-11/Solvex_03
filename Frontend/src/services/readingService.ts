@@ -64,22 +64,26 @@ export const readingService = {
     return response.data;
   },
 
-  async getOwnReadings(params?: {
+  async getOwnReadings(paramsOrLimit?: number | {
     from?: string;
     to?: string;
     page?: number;
     page_size?: number;
+    limit?: number;
   }): Promise<ReadingOut[]> {
+    const params = typeof paramsOrLimit === 'number' ? { limit: paramsOrLimit } : paramsOrLimit;
     const response = await apiClient.get<ReadingOut[]>('/patients/me/readings', { params });
     return response.data;
   },
 
-  async getPatientReadings(patientId: number, params?: {
+  async getPatientReadings(patientId: number, paramsOrLimit?: number | {
     from?: string;
     to?: string;
     page?: number;
     page_size?: number;
+    limit?: number;
   }): Promise<ReadingOut[]> {
+    const params = typeof paramsOrLimit === 'number' ? { limit: paramsOrLimit } : paramsOrLimit;
     const response = await apiClient.get<ReadingOut[]>(`/doctor/patients/${patientId}/readings`, { params });
     return response.data;
   },

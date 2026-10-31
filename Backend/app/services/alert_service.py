@@ -104,7 +104,7 @@ def get_alerts_for_patient(db: Session, patient_id: int, active_only: bool = Tru
     """List active patient-facing alerts."""
     query = db.query(Alert).filter(Alert.patient_id == patient_id)
     if active_only:
-        query = query.filter(Alert.lifecycle.in_(["raised", "delivered", "escalated"]))
+        query = query.filter(Alert.lifecycle.in_(["raised", "delivered", "escalated", "acknowledged"]))
     return query.order_by(Alert.created_at.desc()).all()
 
 
