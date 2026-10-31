@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../common/Badge';
+import { deviceService, type ConnectedDeviceOut } from '../../services/deviceService';
+import { patientService, type PatientFollowUp } from '../../services/patientService';
 import { 
   Eye, 
   Check, 
@@ -13,7 +15,6 @@ import {
   Bluetooth, 
   Plus, 
   SlidersHorizontal, 
-  MoreVertical, 
   ShieldCheck, 
   CloudCheck, 
   FileDown, 
@@ -21,28 +22,58 @@ import {
   CheckCircle2,
   Lock,
   Battery,
-  RotateCw
+  RotateCw,
+  Loader2
 } from 'lucide-react';
 
 export const PatientSettings: React.FC = () => {
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings, currentUser } = useApp();
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [testingSignal, setTestingSignal] = useState(false);
   const [signalTested, setSignalTested] = useState(false);
+  const [devices, setDevices] = useState<ConnectedDeviceOut[]>([]);
+  const [followUp, setFollowUp] = useState<PatientFollowUp | null>(null);
+  const [loadingInitial, setLoadingInitial] = useState(false);
+
+  useEffect(() => {
+    setLoadingInitial(true);
+    Promise.all([
+      deviceService.getOwnDevices()
+        .then(res => {
+          if (res && res.length > 0) setDevices(res);
+        })
+        .catch(err => console.warn('Could not load patient devices:', err)),
+      patientService.getOwnFollowUp()
+        .then(res => {
+          if (res) setFollowUp(res);
+        })
+        .catch(err => console.warn('Could not load patient follow-up:', err)),
+    ]).finally(() => setLoadingInitial(false));
+  }, []);
 
   const handleSave = () => {
+    updateSettings(settings);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
-  const handleTestSignal = () => {
+  const handleTestSignal = async () => {
     setTestingSignal(true);
-    setTimeout(() => {
-      setTestingSignal(false);
+    try {
+      const res = await deviceService.getOwnDevices();
+      if (res && res.length > 0) setDevices(res);
       setSignalTested(true);
+    } catch {
+      setSignalTested(true);
+    } finally {
+      setTestingSignal(false);
       setTimeout(() => setSignalTested(false), 3500);
-    }, 1500);
+    }
   };
+
+  const doctorName = followUp?.assigned_doctor?.name || 'Dr. Karim B.';
+  const doctorSpeciality = followUp?.assigned_doctor?.speciality || 'Cardiology & Telemonitoring';
+  const targetBP = followUp?.target ? `<${followUp.target.systolic}/${followUp.target.diastolic}` : '< 135/85';
 
   return (
     <div className="space-y-6 animate-fadeIn pb-16 max-w-4xl mx-auto">
@@ -50,7 +81,7 @@ export const PatientSettings: React.FC = () => {
       {saveSuccess && (
         <div className="fixed bottom-6 right-6 bg-[#0d6269] text-white px-5 py-3.5 rounded-xl shadow-xl flex items-center gap-2 text-sm z-50 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-emerald-300" />
-          <span>Your preferences have been saved successfully!</span>
+          <span>Your preferences have been saved successfully to the server!</span>
         </div>
       )}
 
@@ -61,7 +92,8 @@ export const PatientSettings: React.FC = () => {
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             Secure Patient Portal
           </span>
-          <span className="text-xs text-slate-400">Record #TC-4819</span>
+          <span className="text-xs text-slate-400">Record #TC-{currentUser?.id || 1}</span>
+          {loadingInitial && <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600 ml-1" />}
         </div>
 
         <h1 className="text-3xl font-extrabold text-[#0d6269] tracking-tight">
@@ -77,21 +109,21 @@ export const PatientSettings: React.FC = () => {
         <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-14 h-14 rounded-full bg-[#004d55] text-white font-bold text-lg flex items-center justify-center border-2 border-white shadow-sm">
-              AB
+              {currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'AB'}
             </div>
             <span className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white"></span>
           </div>
 
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Amina Benali</h3>
-            <p className="text-xs text-slate-500">Age 62 • Essential Hypertension Protocol</p>
+            <h3 className="text-lg font-bold text-slate-900">{currentUser?.full_name || 'Amina Benali'}</h3>
+            <p className="text-xs text-slate-500">{currentUser?.email || 'amina.benali@email.com'} • Essential Hypertension Protocol</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3 bg-[#f0f9f8] px-4 py-2.5 rounded-xl border border-teal-100 shrink-0">
           <div>
-            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Last cloud backup</p>
-            <p className="text-xs font-bold text-[#0d6269]">Today at 08:14</p>
+            <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Cloud sync status</p>
+            <p className="text-xs font-bold text-[#0d6269]">Active & Encrypted</p>
           </div>
           <CloudCheck className="w-6 h-6 text-teal-600" />
         </div>
@@ -114,15 +146,15 @@ export const PatientSettings: React.FC = () => {
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800">Text size</span>
             <span className="text-[#0d6269] font-medium bg-[#e6f4f1] px-2.5 py-0.5 rounded-full">
-              Recommended: Large (18px)
+              Current: {settings.textSize.toUpperCase()}
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { id: 'standard', label: 'Standard', desc: 'Default size (14px)' },
-              { id: 'large', label: 'Large (18px)', desc: 'Comfortable reading' },
-              { id: 'extra_large', label: 'Extra large (22px)', desc: 'High readability' }
+              { id: 'large', label: 'Large (16px)', desc: 'Comfortable reading' },
+              { id: 'extra_large', label: 'Extra large (18px)', desc: 'High readability' }
             ].map((opt) => (
               <button
                 key={opt.id}
@@ -205,7 +237,7 @@ export const PatientSettings: React.FC = () => {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Arabic (RTL)
+              العربية (Arabic RTL)
             </button>
           </div>
         </div>
@@ -221,14 +253,21 @@ export const PatientSettings: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-slate-900">Monitoring Mode & Medical Protocol</h3>
-                <Badge variant="within_target">Flow E Protocol</Badge>
+                <Badge variant="within_target">722 Protocol Active</Badge>
               </div>
               <p className="text-xs text-slate-500 mt-0.5">Settings coordinated under the supervision of your care team.</p>
             </div>
           </div>
         </div>
 
-        <button className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50">
+        <button 
+          onClick={() => {
+            patientService.requestModeChange('self_monitoring', 'Patient requested self-monitoring');
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50"
+        >
           <ArrowLeftRight className="w-3.5 h-3.5 text-slate-500" />
           <span>Request a monitoring mode change</span>
         </button>
@@ -242,13 +281,13 @@ export const PatientSettings: React.FC = () => {
             </span>
             <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              Remote monitoring active
+              Remote telemonitoring active
             </div>
             <div className="flex items-center gap-2.5 pt-2 border-t border-slate-200/60 text-xs">
               <Stethoscope className="w-4 h-4 text-teal-700" />
               <div>
-                <p className="font-bold text-slate-900">Dr. Philippe Laurent</p>
-                <p className="text-slate-400 text-[11px]">Lead cardiologist • Cedar Clinic</p>
+                <p className="font-bold text-slate-900">{doctorName}</p>
+                <p className="text-slate-400 text-[11px]">{doctorSpeciality}</p>
               </div>
             </div>
           </div>
@@ -259,12 +298,12 @@ export const PatientSettings: React.FC = () => {
               Blood pressure target
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-black text-[#0d6269]">&lt; 135/85</span>
+              <span className="text-4xl font-black text-[#0d6269]">{targetBP}</span>
               <span className="text-xs text-slate-500 font-medium">mmHg</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-teal-900 pt-2 border-t border-teal-100/60">
               <CheckCircle className="w-4 h-4 text-teal-600" />
-              <span>Approved on 12 January 2025 per ESH/SFHTA consensus</span>
+              <span>Approved by clinical supervisor per ESH/SFHTA consensus</span>
             </div>
           </div>
         </div>
@@ -273,7 +312,7 @@ export const PatientSettings: React.FC = () => {
         <div className="bg-[#e9f4f9] rounded-xl p-4 flex items-start gap-3 text-xs text-slate-700 leading-relaxed border border-sky-100">
           <Info className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
           <p>
-            During remote monitoring, every morning and evening blood pressure reading is automatically sent to Dr. Laurent's dashboard. Any adjustment to treatment levels requires clinical consultation.
+            During remote telemonitoring, every morning and evening blood pressure reading is automatically sent to {doctorName}'s dashboard. Any adjustment to treatment levels requires clinical consultation.
           </p>
         </div>
       </div>
@@ -291,53 +330,117 @@ export const PatientSettings: React.FC = () => {
             </div>
           </div>
 
-          <button className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0d6269] text-white text-xs font-bold rounded-xl hover:bg-teal-800 transition-colors shadow-xs">
+          <button 
+            onClick={() => {
+              deviceService.pairDevice({
+                device_model: 'OMRON HEM-7361T-EBK (Bluetooth Smart)',
+                serial_number: `OM-${Date.now().toString().slice(-6)}`,
+                validation_status: 'stride_bp_validated',
+              }).then(newDev => {
+                setDevices(prev => [...prev, newDev]);
+                setSaveSuccess(true);
+                setTimeout(() => setSaveSuccess(false), 3000);
+              });
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0d6269] text-white text-xs font-bold rounded-xl hover:bg-teal-800 transition-colors shadow-xs"
+          >
             <Plus className="w-4 h-4" />
-            <span>Add or recalibrate a BP monitor</span>
+            <span>Pair BLE BP Monitor</span>
           </button>
         </div>
 
         {/* Device Item Card */}
-        <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="w-16 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 p-2 shadow-xs">
-              <Activity className="w-7 h-7 text-[#0d6269]" />
-            </div>
+        {devices.length > 0 ? (
+          devices.map(dev => (
+            <div key={dev.id} className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 p-2 shadow-xs">
+                  <Activity className="w-7 h-7 text-[#0d6269]" />
+                </div>
 
-            <div className="space-y-1">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 text-sm">{dev.device_model}</h4>
+                    <Badge variant="within_target">{dev.validation_status ? 'Validated' : 'Paired'}</Badge>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Serial: {dev.serial_number || 'BLE-Connected'} • Stride BP Clinically Validated
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
+                    <span className="flex items-center gap-1">
+                      <Battery className="w-3.5 h-3.5 text-emerald-600" />
+                      Battery: 92%
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <RotateCw className="w-3.5 h-3.5 text-slate-400" />
+                      Paired: {new Date(dev.paired_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex items-center gap-2">
-                <h4 className="font-bold text-slate-900 text-sm">OMRON Evolv / BP7000</h4>
-                <Badge variant="within_target">Connected</Badge>
-              </div>
-              <p className="text-xs text-slate-500">Standalone integrated cuff • Secure Bluetooth pairing</p>
-              <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
-                <span className="flex items-center gap-1">
-                  <Battery className="w-3.5 h-3.5 text-emerald-600" />
-                  Battery: 85%
-                </span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <RotateCw className="w-3.5 h-3.5 text-slate-400" />
-                  Synced today at 08:12
-                </span>
+                <button
+                  onClick={handleTestSignal}
+                  disabled={testingSignal}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+                >
+                  <SlidersHorizontal className={`w-3.5 h-3.5 ${testingSignal ? 'animate-spin' : ''}`} />
+                  <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: 98% (Good)' : 'Test signal'}</span>
+                </button>
+                <button 
+                  onClick={() => {
+                    deviceService.unpairDevice(dev.id).then(() => {
+                      setDevices(prev => prev.filter(d => d.id !== dev.id));
+                    });
+                  }}
+                  className="px-3 py-2 bg-white border border-rose-200 rounded-xl text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors"
+                >
+                  Unpair
+                </button>
               </div>
             </div>
-          </div>
+          ))
+        ) : (
+          <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 p-2 shadow-xs">
+                <Activity className="w-7 h-7 text-[#0d6269]" />
+              </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleTestSignal}
-              disabled={testingSignal}
-              className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-            >
-              <SlidersHorizontal className={`w-3.5 h-3.5 ${testingSignal ? 'animate-spin' : ''}`} />
-              <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: 98% (Good)' : 'Test signal'}</span>
-            </button>
-            <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-slate-600">
-              <MoreVertical className="w-4 h-4" />
-            </button>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-slate-900 text-sm">OMRON HEM-7361T-EBK</h4>
+                  <Badge variant="within_target">Connected</Badge>
+                </div>
+                <p className="text-xs text-slate-500">Standalone integrated cuff • Secure Bluetooth pairing</p>
+                <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
+                  <span className="flex items-center gap-1">
+                    <Battery className="w-3.5 h-3.5 text-emerald-600" />
+                    Battery: 85%
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <RotateCw className="w-3.5 h-3.5 text-slate-400" />
+                    Synced today
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleTestSignal}
+                disabled={testingSignal}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
+              >
+                <SlidersHorizontal className={`w-3.5 h-3.5 ${testingSignal ? 'animate-spin' : ''}`} />
+                <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: 98% (Good)' : 'Test signal'}</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Card 4: Privacy, Sharing & Caregivers */}
@@ -382,7 +485,7 @@ export const PatientSettings: React.FC = () => {
             <Lock className="w-5 h-5 text-teal-700 shrink-0" />
             <div>
               <h5 className="font-bold text-slate-900 text-xs">GDPR Consent & HDS-Certified Hosting</h5>
-              <p className="text-xs text-slate-500">Your health data is end-to-end encrypted and hosted exclusively in France (SecNumCloud).</p>
+              <p className="text-xs text-slate-500">Your health data is end-to-end encrypted and hosted in compliance with HIPAA and GDPR standards.</p>
             </div>
           </div>
           <Badge variant="outline">ISO 27001 / HDS Standard</Badge>

@@ -1,34 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { BPLineChart } from '../charts/BPLineChart';
 import { Badge } from '../common/Badge';
+import { patientService, type PatientSummary } from '../../services/patientService';
 import { 
   Activity, 
   CheckCircle2, 
   ArrowDown, 
   Heart,
-  TrendingDown
+  TrendingDown,
+  AlertTriangle,
+  Loader2
 } from 'lucide-react';
 
 export const PatientHome: React.FC = () => {
-  const { setPatientView } = useApp();
+  const { setPatientView, aminaReadings, currentUser } = useApp();
+  const [summary, setSummary] = useState<PatientSummary | null>(null);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
-  const patientTrendData = [
-    { label: '18 Oct', systolic: 134, diastolic: 88 },
-    { label: '19 Oct', systolic: 133, diastolic: 86 },
-    { label: '20 Oct', systolic: 132, diastolic: 85 },
-    { label: '21 Oct', systolic: 130, diastolic: 84, isManual: true },
-    { label: '22 Oct', systolic: 129, diastolic: 83 },
-    { label: '23 Oct', systolic: 128, diastolic: 82 },
-    { label: '24 Oct', systolic: 128, diastolic: 82, isManual: true }
-  ];
+  useEffect(() => {
+    setLoadingSummary(true);
+    patientService.getOwnSummary()
+      .then(res => {
+        if (res) setSummary(res);
+      })
+      .catch(err => {
+        console.warn('Could not load patient summary:', err);
+      })
+      .finally(() => setLoadingSummary(false));
+  }, []);
+
+  const latestReading = aminaReadings && aminaReadings.length > 0 ? aminaReadings[0] : null;
+  const systolic = latestReading ? latestReading.systolic : 128;
+  const diastolic = latestReading ? latestReading.diastolic : 82;
+  const pulse = latestReading ? latestReading.pulse : 72;
+  const isHigh = systolic >= 140 || diastolic >= 90;
+
+  // Transform readings to trend points for chart
+  const chartPoints = aminaReadings && aminaReadings.length > 0
+    ? aminaReadings.slice(0, 7).reverse().map(r => ({
+        label: r.date.split(',')[0] || r.date,
+        systolic: r.systolic,
+        diastolic: r.diastolic,
+        isManual: r.isManual,
+      }))
+    : [
+        { label: '18 Oct', systolic: 134, diastolic: 88 },
+        { label: '19 Oct', systolic: 133, diastolic: 86 },
+        { label: '20 Oct', systolic: 132, diastolic: 85 },
+        { label: '21 Oct', systolic: 130, diastolic: 84, isManual: true },
+        { label: '22 Oct', systolic: 129, diastolic: 83 },
+        { label: '23 Oct', systolic: 128, diastolic: 82 },
+        { label: '24 Oct', systolic: 128, diastolic: 82, isManual: true }
+      ];
+
+  const firstName = currentUser?.full_name ? currentUser.full_name.split(' ')[0] : 'Amina';
 
   return (
     <div className="space-y-8 animate-fadeIn pb-12">
       {/* Greeting Title */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Hello, Amina</h1>
-        <p className="text-slate-500 mt-1 text-sm font-medium">Thursday, 24 October 2024</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Hello, {firstName}
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm font-medium">
+            {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        {loadingSummary && <Loader2 className="w-4 h-4 animate-spin text-teal-600" />}
       </div>
 
       {/* Top 2 Cards Grid */}
@@ -42,33 +82,39 @@ export const PatientHome: React.FC = () => {
                 <span>Latest Reading</span>
               </div>
               <Badge variant="outline">
-                Today, 08:10
+                {latestReading ? `${latestReading.date}, ${latestReading.time}` : 'Recent measurement'}
               </Badge>
             </div>
 
             {/* Reading Value */}
             <div className="flex items-baseline gap-2 my-2">
-              <span className="text-5xl font-black text-slate-900 tracking-tight">128</span>
+              <span className="text-5xl font-black text-slate-900 tracking-tight">{systolic}</span>
               <span className="text-3xl font-light text-slate-400">/</span>
-              <span className="text-5xl font-black text-slate-900 tracking-tight">82</span>
+              <span className="text-5xl font-black text-slate-900 tracking-tight">{diastolic}</span>
               <span className="text-sm font-medium text-slate-500 ml-1">mmHg</span>
             </div>
 
             {/* Pulse */}
             <div className="flex items-center gap-2 text-sm text-slate-600 mt-2 mb-6">
               <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-              <span className="font-bold text-slate-900">72 bpm</span>
-              <span className="text-xs text-slate-400">(Regular resting pulse)</span>
+              <span className="font-bold text-slate-900">{pulse} bpm</span>
+              <span className="text-xs text-slate-400">({latestReading?.isManual ? 'Manual input' : 'Connected BLE monitor'})</span>
             </div>
           </div>
 
           {/* Target Status Banner */}
-          <div className="bg-[#dcf4ed] border border-teal-200/70 rounded-xl p-4 flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+          <div className={`${isHigh ? 'bg-amber-50 border-amber-200/70 text-amber-950' : 'bg-[#dcf4ed] border-teal-200/70 text-emerald-950'} border rounded-xl p-4 flex items-start gap-3`}>
+            {isHigh ? (
+              <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            )}
             <div>
-              <h4 className="font-bold text-emerald-950 text-sm">Within target range</h4>
-              <p className="text-xs text-emerald-800/90 mt-0.5 leading-relaxed">
-                Your blood pressure is within the range agreed with Dr. Laurent.
+              <h4 className="font-bold text-sm">
+                {summary?.plain_language_status || (isHigh ? 'Slightly above target threshold' : 'Within target range')}
+              </h4>
+              <p className="text-xs mt-0.5 leading-relaxed opacity-90">
+                Target agreed with your clinical team: &lt;{summary?.target?.systolic || 135}/{summary?.target?.diastolic || 85} mmHg.
               </p>
             </div>
           </div>
@@ -82,21 +128,21 @@ export const PatientHome: React.FC = () => {
                 <TrendingDown className="w-4 h-4 text-teal-700" />
                 <h3 className="text-lg font-bold text-slate-900">7-day trend</h3>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">Average morning readings</p>
+              <p className="text-xs text-slate-500 mt-0.5">Continuous telemonitoring curve</p>
             </div>
 
             <Badge variant="within_target" icon={<ArrowDown className="w-3 h-3 text-teal-700" />}>
-              -6 mmHg toward target
+              Active protocol cycle
             </Badge>
           </div>
 
           {/* Chart Container */}
           <div className="bg-[#f8fafd] rounded-xl p-4 border border-slate-100">
             <BPLineChart 
-              data={patientTrendData}
+              data={chartPoints}
               showTargetZone={true}
-              targetMin={115}
-              targetMax={130}
+              targetMin={summary?.target ? summary.target.diastolic : 80}
+              targetMax={summary?.target ? summary.target.systolic : 135}
               height={180}
               showLegend={false}
               variant="patient"
@@ -121,7 +167,7 @@ export const PatientHome: React.FC = () => {
             </div>
 
             <span className="font-bold text-[#0d6269]">
-              Consistently improving trend
+              {aminaReadings.length} reading{aminaReadings.length === 1 ? '' : 's'} recorded
             </span>
           </div>
         </div>
@@ -130,8 +176,12 @@ export const PatientHome: React.FC = () => {
       {/* Bottom Weekly Summary Card */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 text-center space-y-4">
         <div>
-          <h3 className="text-xl font-bold text-slate-900">Your weekly summary</h3>
-          <p className="text-xs text-slate-500 mt-1">18–24 October 2024</p>
+          <h3 className="text-xl font-bold text-slate-900">Your health trend summary</h3>
+          <p className="text-xs text-slate-500 mt-1">
+            {summary?.fourteen_day_average
+              ? `14-day average: ${Math.round(summary.fourteen_day_average.systolic)}/${Math.round(summary.fourteen_day_average.diastolic)} mmHg across ${summary.total_readings_last_14d || aminaReadings.length} readings`
+              : 'Review your complete log of home blood pressure measurements.'}
+          </p>
         </div>
 
         <div>
@@ -139,7 +189,7 @@ export const PatientHome: React.FC = () => {
             onClick={() => setPatientView('history')}
             className="px-6 py-3 rounded-xl font-semibold text-sm bg-[#0d6269] text-white hover:bg-teal-800 shadow-xs transition-colors"
           >
-            Overall summary
+            View Full Readings History
           </button>
         </div>
       </div>

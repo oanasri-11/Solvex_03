@@ -58,7 +58,7 @@ export const DoctorPatients: React.FC = () => {
 
       {/* Table Section Header */}
       <div className="flex items-center justify-between text-sm">
-        <h3 className="font-bold text-slate-900">148 patients under care</h3>
+        <h3 className="font-bold text-slate-900">{patients.length} patients under care</h3>
         <span className="text-xs text-slate-400">Sorted by clinical priority</span>
       </div>
 
@@ -92,7 +92,7 @@ export const DoctorPatients: React.FC = () => {
                           {patient.name}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {patient.id === 'p4' ? 'Telemonitoring' : `${patient.age} years · ${patient.code}`}
+                          {patient.age} years · {patient.code}
                         </p>
                       </div>
                     </div>
@@ -143,7 +143,7 @@ export const DoctorPatients: React.FC = () => {
 
         {/* Pagination Footer */}
         <div className="p-4 px-6 bg-white border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span>Showing {filteredPatients.length} of 148 patients</span>
+          <span>Showing {filteredPatients.length} of {patients.length} patients</span>
           <div className="flex items-center gap-3 font-medium">
             <button
               disabled={page === 1}

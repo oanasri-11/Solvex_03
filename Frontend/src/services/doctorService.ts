@@ -13,6 +13,8 @@ export interface DoctorDashboardMetrics {
   open_contact_requests_count: number;
 }
 
+export type DoctorDashboardResponse = DoctorDashboardMetrics;
+
 export interface PriorityQueueItem {
   patient_id: number;
   first_name: string;

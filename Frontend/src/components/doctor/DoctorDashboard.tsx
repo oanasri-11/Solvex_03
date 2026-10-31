@@ -1,17 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../common/Badge';
-import { Bell, ArrowUpRight, ArrowRight, Phone } from 'lucide-react';
+import { doctorService, type DoctorDashboardResponse } from '../../services/doctorService';
+import { Bell, ArrowUpRight, ArrowRight, Phone, RefreshCw } from 'lucide-react';
 
 export const DoctorDashboard: React.FC = () => {
-  const { patients, setDoctorView, navigateToDoctorPatient } = useApp();
+  const { patients, currentUser, setDoctorView, navigateToDoctorPatient, refreshDoctorCohort } = useApp();
+  const [metrics, setMetrics] = useState<DoctorDashboardResponse | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchMetrics = async () => {
+    try {
+      const data = await doctorService.getDashboard();
+      setMetrics(data);
+    } catch (err) {
+      console.warn('Could not load doctor dashboard metrics from backend:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+  }, []);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([fetchMetrics(), refreshDoctorCohort()]);
+    setIsRefreshing(false);
+  };
+
+  const patientCount = metrics ? metrics.active_patient_count : patients.length;
+  const criticalCount = metrics
+    ? (metrics.alerts_by_tier.critical_emergency || 0) + (metrics.alerts_by_tier.severe_single_reading || 0)
+    : 12;
+  const openAlertsCount = metrics ? metrics.unacknowledged_alerts_count : 18;
+  const contactRequestsCount = metrics ? metrics.open_contact_requests_count : 3;
 
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Welcome Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Good morning, Dr. Karim</h1>
-        <p className="text-slate-500 mt-1 text-base">Your patients and the issues that need your attention.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
+            Good morning, {currentUser?.full_name || 'Dr. Karim'}
+          </h1>
+          <p className="text-slate-500 mt-1 text-base">Your patients and the issues that need your attention.</p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="inline-flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 transition-colors shadow-2xs"
+          title="Refresh dashboard data"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-teal-600' : ''}`} />
+          <span>Sync Live Data</span>
+        </button>
       </div>
 
       {/* 3 Metric Summary Cards */}
@@ -19,22 +61,22 @@ export const DoctorDashboard: React.FC = () => {
         {/* Card 1 */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-sm font-medium text-slate-500">Patients under care</p>
-          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight my-2">148</h2>
-          <p className="text-xs text-slate-500">92 telemonitoring · 56 self-monitoring</p>
+          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight my-2">{patientCount}</h2>
+          <p className="text-xs text-slate-500">Active clinical telemonitoring caseload</p>
         </div>
 
         {/* Card 2 */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-sm font-medium text-slate-500">High / urgent priority</p>
-          <h2 className="text-4xl font-extrabold text-rose-600 tracking-tight my-2">12</h2>
-          <p className="text-xs text-slate-500">3 critical · 9 persistent shifts</p>
+          <h2 className="text-4xl font-extrabold text-rose-600 tracking-tight my-2">{criticalCount}</h2>
+          <p className="text-xs text-slate-500">Critical & severe clinical shifts</p>
         </div>
 
         {/* Card 3 */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
           <p className="text-sm font-medium text-slate-500">Open alerts</p>
-          <h2 className="text-4xl font-extrabold text-amber-600 tracking-tight my-2">18</h2>
-          <p className="text-xs text-slate-500">4 high-priority alerts unacknowledged</p>
+          <h2 className="text-4xl font-extrabold text-amber-600 tracking-tight my-2">{openAlertsCount}</h2>
+          <p className="text-xs text-slate-500">Awaiting clinician acknowledgment</p>
         </div>
       </div>
 
@@ -43,7 +85,7 @@ export const DoctorDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Patients to prioritize</h2>
-            <p className="text-sm text-slate-500">A focused view of the current care queue.</p>
+            <p className="text-sm text-slate-500">A focused view of the current care queue (P1–P4 triage).</p>
           </div>
           <button
             onClick={() => setDoctorView('alerts')}
@@ -84,7 +126,7 @@ export const DoctorDashboard: React.FC = () => {
                             {patient.name}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {patient.id === 'p4' ? 'Telemonitoring' : `${patient.age} years · ${patient.code}`}
+                            {patient.age} years · {patient.code}
                           </p>
                         </div>
                       </div>
@@ -154,7 +196,7 @@ export const DoctorDashboard: React.FC = () => {
             <Phone className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm">3 patients are waiting for contact</h4>
+            <h4 className="font-bold text-slate-900 text-sm">{contactRequestsCount} patient{contactRequestsCount === 1 ? '' : 's'} waiting for contact</h4>
             <p className="text-xs text-slate-600 mt-0.5">
               Review contact requests alongside clinical alerts in your inbox.
             </p>

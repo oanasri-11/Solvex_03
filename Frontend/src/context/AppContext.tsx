@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { 
   Role, 
   DoctorView, 
@@ -18,6 +18,19 @@ import {
   initialAminaReadings, 
   initialMarcDupuisReadings 
 } from '../data/mockData';
+import { authService, type UserMe } from '../services/authService';
+import { doctorService } from '../services/doctorService';
+import { alertService } from '../services/alertService';
+import { readingService } from '../services/readingService';
+import { userService } from '../services/userService';
+import { 
+  mapBackendPriorityQueueItemToPatient, 
+  mapBackendReadingToBPReading, 
+  mapBackendAlertToDoctorAlert, 
+  mapBackendAlertToPatientAlert,
+  mapBackendSettingsToFrontend,
+  mapFrontendSettingsToBackend
+} from '../utils/mappers';
 
 interface AppContextType {
   role: Role;
@@ -33,10 +46,14 @@ interface AppContextType {
   patientView: PatientView;
   setPatientView: (view: PatientView) => void;
   
-  // Auth & Flow helpers
-  loginAsDoctor: () => void;
-  loginAsPatient: () => void;
-  logout: () => void;
+  // Auth & Session
+  currentUser: UserMe | null;
+  isAuthenticated: boolean;
+  authLoading: boolean;
+  login: (email: string, password: string, targetRole?: Role) => Promise<void>;
+  loginAsDoctor: () => Promise<void>;
+  loginAsPatient: () => Promise<void>;
+  logout: () => Promise<void>;
   resetToSplash: () => void;
 
   // Data
@@ -48,19 +65,24 @@ interface AppContextType {
   doctorAlerts: DoctorAlert[];
   selectedDoctorAlert: DoctorAlert;
   setSelectedDoctorAlert: (alert: DoctorAlert) => void;
-  acknowledgeAlert: (alertId: string) => void;
-  resolveAlert: (alertId: string) => void;
+  acknowledgeAlert: (alertId: string) => Promise<void>;
+  resolveAlert: (alertId: string) => Promise<void>;
 
   patientAlerts: PatientAlert[];
   selectedPatientAlert: PatientAlert;
   setSelectedPatientAlert: (alert: PatientAlert) => void;
 
   aminaReadings: BPReading[];
-  addAminaReading: (reading: Omit<BPReading, 'id'>) => void;
+  addAminaReading: (reading: Omit<BPReading, 'id'>) => Promise<void>;
   marcDpuisReadings: BPReading[];
 
   settings: SettingsState;
   updateSettings: (newSettings: Partial<SettingsState>) => void;
+
+  // Data Refresh
+  refreshDoctorCohort: () => Promise<void>;
+  refreshPatientReadings: () => Promise<void>;
+  refreshAlerts: () => Promise<void>;
 
   // Navigation helpers
   navigateToDoctorPatient: (patientId: string) => void;
@@ -78,14 +100,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [doctorView, setDoctorView] = useState<DoctorView>('home');
   const [patientView, setPatientView] = useState<PatientView>('home');
 
-  const [patients] = useState<Patient[]>(initialPatients);
-  const [selectedPatient, setSelectedPatient] = useState<Patient>(initialPatients[1]); // Marc Dupuis
+  // Auth state
+  const [currentUser, setCurrentUser] = useState<UserMe | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
+
+  // Cohort & alerts data
+  const [patients, setPatients] = useState<Patient[]>(initialPatients);
+  const [selectedPatient, setSelectedPatient] = useState<Patient>(initialPatients[1]); // Default Marc Dupuis
 
   const [doctorAlerts, setDoctorAlerts] = useState<DoctorAlert[]>(initialDoctorAlerts);
   const [selectedDoctorAlert, setSelectedDoctorAlert] = useState<DoctorAlert>(initialDoctorAlerts[0]);
 
-  const [patientAlerts] = useState<PatientAlert[]>(initialPatientAlerts);
-  const [selectedPatientAlert, setSelectedPatientAlert] = useState<PatientAlert>(initialPatientAlerts[2]); // Device sync alert
+  const [patientAlerts, setPatientAlerts] = useState<PatientAlert[]>(initialPatientAlerts);
+  const [selectedPatientAlert, setSelectedPatientAlert] = useState<PatientAlert>(initialPatientAlerts[2]);
 
   const [aminaReadings, setAminaReadings] = useState<BPReading[]>(initialAminaReadings);
   const [marcDpuisReadings] = useState<BPReading[]>(initialMarcDupuisReadings);
@@ -116,6 +144,107 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [settings]);
 
+  // Refresh Doctor Cohort & Alerts from backend
+  const refreshDoctorCohort = useCallback(async () => {
+    try {
+      const queueRes = await doctorService.getPriorityQueue();
+      if (queueRes && queueRes.items && queueRes.items.length > 0) {
+        const mappedPatients = queueRes.items.map(mapBackendPriorityQueueItemToPatient);
+        setPatients(mappedPatients);
+        setSelectedPatient(prev => {
+          const stillThere = mappedPatients.find(p => p.id === prev.id);
+          return stillThere || mappedPatients[0];
+        });
+      }
+    } catch (err) {
+      console.warn('Could not fetch doctor priority queue from backend:', err);
+    }
+
+    try {
+      const alertsRes = await alertService.getDoctorAlerts();
+      if (alertsRes && alertsRes.length > 0) {
+        const mappedAlerts = alertsRes.map(a => mapBackendAlertToDoctorAlert(a));
+        setDoctorAlerts(mappedAlerts);
+        setSelectedDoctorAlert(prev => {
+          const stillThere = mappedAlerts.find(a => a.id === prev.id);
+          return stillThere || mappedAlerts[0];
+        });
+      }
+    } catch (err) {
+      console.warn('Could not fetch doctor alerts from backend:', err);
+    }
+  }, []);
+
+  // Refresh Patient Readings & Alerts from backend
+  const refreshPatientReadings = useCallback(async () => {
+    try {
+      const readingsRes = await readingService.getOwnReadings();
+      if (readingsRes && readingsRes.length > 0) {
+        const mappedReadings = readingsRes.map(mapBackendReadingToBPReading);
+        setAminaReadings(mappedReadings);
+      }
+    } catch (err) {
+      console.warn('Could not fetch patient readings from backend:', err);
+    }
+
+    try {
+      const alertsRes = await alertService.getOwnAlerts();
+      if (alertsRes && alertsRes.length > 0) {
+        const mappedAlerts = alertsRes.map(mapBackendAlertToPatientAlert);
+        setPatientAlerts(mappedAlerts);
+        setSelectedPatientAlert(prev => {
+          const stillThere = mappedAlerts.find(a => a.id === prev.id);
+          return stillThere || mappedAlerts[0];
+        });
+      }
+    } catch (err) {
+      console.warn('Could not fetch patient alerts from backend:', err);
+    }
+  }, []);
+
+  const refreshAlerts = useCallback(async () => {
+    if (role === 'doctor') {
+      await refreshDoctorCohort();
+    } else {
+      await refreshPatientReadings();
+    }
+  }, [role, refreshDoctorCohort, refreshPatientReadings]);
+
+  // Check auth session on boot
+  useEffect(() => {
+    const checkAuthSession = async () => {
+      setAuthLoading(true);
+      if (authService.isAuthenticated()) {
+        try {
+          const user = await authService.getMe();
+          setCurrentUser(user);
+          setIsAuthenticated(true);
+          const activeRole: Role = user.role === 'doctor' ? 'doctor' : 'patient';
+          setRole(activeRole);
+          setAuthRole(activeRole);
+          setAppView(activeRole);
+          setSettings(mapBackendSettingsToFrontend(user));
+
+          if (activeRole === 'doctor') {
+            await refreshDoctorCohort();
+          } else {
+            await refreshPatientReadings();
+          }
+        } catch (err) {
+          console.warn('Session hydration failed, clearing invalid credentials:', err);
+          await authService.logout();
+          setCurrentUser(null);
+          setIsAuthenticated(false);
+          setAppView('auth');
+          setAuthView('login');
+        }
+      }
+      setAuthLoading(false);
+    };
+
+    checkAuthSession();
+  }, [refreshDoctorCohort, refreshPatientReadings]);
+
   const selectPatientById = (id: string) => {
     const found = patients.find(p => p.id === id || p.code === id);
     if (found) {
@@ -123,47 +252,125 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const acknowledgeAlert = (alertId: string) => {
+  const acknowledgeAlert = async (alertId: string) => {
+    // Optimistic UI update
     setDoctorAlerts(prev => prev.map(a => a.id === alertId ? { ...a, isAcknowledged: true } : a));
     if (selectedDoctorAlert.id === alertId) {
       setSelectedDoctorAlert(prev => ({ ...prev, isAcknowledged: true }));
     }
+    const numId = parseInt(alertId, 10);
+    if (!isNaN(numId)) {
+      try {
+        await alertService.acknowledgeAlert(numId);
+      } catch (err) {
+        console.error('Failed to acknowledge alert on backend:', err);
+      }
+    }
   };
 
-  const resolveAlert = (alertId: string) => {
+  const resolveAlert = async (alertId: string) => {
+    // Optimistic UI update
     setDoctorAlerts(prev => prev.filter(a => a.id !== alertId));
     if (doctorAlerts.length > 0) {
       setSelectedDoctorAlert(doctorAlerts.filter(a => a.id !== alertId)[0] || null);
     }
+    const numId = parseInt(alertId, 10);
+    if (!isNaN(numId)) {
+      try {
+        await alertService.closeAlert(numId, 'Resolved by clinician in dashboard');
+      } catch (err) {
+        console.error('Failed to close alert on backend:', err);
+      }
+    }
   };
 
-  const addAminaReading = (reading: Omit<BPReading, 'id'>) => {
-    const newReading: BPReading = {
+  const addAminaReading = async (reading: Omit<BPReading, 'id'>) => {
+    // Optimistic UI insertion
+    const tempReading: BPReading = {
       ...reading,
       id: `ar-${Date.now()}`
     };
-    setAminaReadings(prev => [newReading, ...prev]);
+    setAminaReadings(prev => [tempReading, ...prev]);
+
+    // Send to backend
+    try {
+      await readingService.createReading({
+        systolic: reading.systolic,
+        diastolic: reading.diastolic,
+        pulse: reading.pulse,
+        capture_method: reading.isManual ? 'manual' : 'device',
+        arm: 'left',
+        posture: 'sitting',
+        symptoms_reported: reading.context ? [reading.context] : [],
+      });
+      // Re-hydrate patient readings & alerts
+      await refreshPatientReadings();
+    } catch (err) {
+      console.warn('Could not persist reading to backend:', err);
+    }
   };
 
   const updateSettings = (newSettings: Partial<SettingsState>) => {
-    setSettings(prev => ({ ...prev, ...newSettings }));
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    if (currentUser) {
+      userService.updatePreferences(mapFrontendSettingsToBackend(updated)).catch(err => {
+        console.warn('Could not persist preferences to backend:', err);
+      });
+    }
   };
 
-  const loginAsDoctor = () => {
-    setRole('doctor');
-    setDoctorView('home');
-    setAppView('doctor');
+  const login = async (email: string, password: string, targetRole?: Role) => {
+    await authService.login(email, password);
+    const user = await authService.getMe();
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    const resolvedRole: Role = (targetRole || (user.role === 'doctor' ? 'doctor' : 'patient'));
+    setRole(resolvedRole);
+    setAuthRole(resolvedRole);
+    setAppView(resolvedRole);
+    setSettings(mapBackendSettingsToFrontend(user));
+
+    if (resolvedRole === 'doctor') {
+      await refreshDoctorCohort();
+    } else {
+      await refreshPatientReadings();
+    }
   };
 
-  const loginAsPatient = () => {
-    setRole('patient');
-    setPatientView('home');
-    setAppView('patient');
+  const loginAsDoctor = async () => {
+    try {
+      await login('dr.karim@clinic.com', 'Password123!', 'doctor');
+    } catch (err) {
+      console.warn('Backend login for dr.karim@clinic.com failed, falling back to mock view:', err);
+      setRole('doctor');
+      setDoctorView('home');
+      setAppView('doctor');
+    }
   };
 
-  const logout = () => {
-    setAppView('auth');
-    setAuthView('login');
+  const loginAsPatient = async () => {
+    try {
+      await login('amina.benali@email.com', 'Password123!', 'patient');
+    } catch (err) {
+      console.warn('Backend login for amina.benali@email.com failed, falling back to mock view:', err);
+      setRole('patient');
+      setPatientView('home');
+      setAppView('patient');
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.warn('Error during logout:', err);
+    } finally {
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      setAppView('auth');
+      setAuthView('login');
+    }
   };
 
   const resetToSplash = () => {
@@ -210,6 +417,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setDoctorView,
         patientView,
         setPatientView,
+        currentUser,
+        isAuthenticated,
+        authLoading,
+        login,
         loginAsDoctor,
         loginAsPatient,
         logout,
@@ -231,6 +442,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         marcDpuisReadings,
         settings,
         updateSettings,
+        refreshDoctorCohort,
+        refreshPatientReadings,
+        refreshAlerts,
         navigateToDoctorPatient,
         navigateToDoctorReview,
         navigateToPatientAlertDetail

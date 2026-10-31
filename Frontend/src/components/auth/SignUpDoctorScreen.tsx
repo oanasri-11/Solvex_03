@@ -1,20 +1,55 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { BrandLogo } from '../common/BrandLogo';
-import { User, FileText, Eye, EyeOff, ChevronDown, Stethoscope } from 'lucide-react';
+import { authService } from '../../services/authService';
+import { User, FileText, Eye, EyeOff, ChevronDown, Stethoscope, AlertCircle, Loader2 } from 'lucide-react';
 
 export const SignUpDoctorScreen: React.FC = () => {
-  const { setAuthView, loginAsDoctor, setAuthRole } = useApp();
+  const { setAuthView, login, setAuthRole } = useApp();
+  const [fullName, setFullName] = useState('Dr. Karim B.');
+  const [email, setEmail] = useState('dr.karim@clinic.com');
+  const [password, setPassword] = useState('Password123!');
+  const [phone, setPhone] = useState('+213770000001');
+  const [licenseNumber, setLicenseNumber] = useState('DZ-DOC-1001');
+  const [specialization, setSpecialization] = useState('cardiology');
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) {
-      alert('Please agree to the Terms of Service and Medical Protocols.');
+      setError('Please agree to the Terms of Service and Medical Protocols.');
       return;
     }
-    loginAsDoctor();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      try {
+        await authService.register({
+          email: email.trim(),
+          password: password.trim(),
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          role: 'doctor',
+        });
+      } catch (regErr: any) {
+        // If already registered, attempt login directly
+        if (!regErr.response?.data?.detail?.includes('already registered')) {
+          throw regErr;
+        }
+      }
+
+      await login(email.trim(), password.trim(), 'doctor');
+    } catch (err: any) {
+      console.error('Doctor registration error:', err);
+      const detail = err.response?.data?.detail || err.message || 'Registration failed. Please check your information.';
+      setError(detail);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,6 +107,13 @@ export const SignUpDoctorScreen: React.FC = () => {
 
         {/* Form Card */}
         <div className="bg-white rounded-3xl border border-slate-200/90 shadow-sm p-8 sm:p-10">
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs font-medium text-rose-700 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Full Name */}
             <div>
@@ -81,7 +123,8 @@ export const SignUpDoctorScreen: React.FC = () => {
               <input
                 type="text"
                 required
-                defaultValue="Dr. Karim B."
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 placeholder="Dr. Karim B."
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
@@ -95,8 +138,9 @@ export const SignUpDoctorScreen: React.FC = () => {
               <input
                 type="email"
                 required
-                defaultValue="dr.karim@clinic.com"
-                placeholder="doctor@clinic.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="dr.karim@clinic.com"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
             </div>
@@ -110,7 +154,8 @@ export const SignUpDoctorScreen: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  defaultValue="SecurePass123!"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269] pr-10"
                 />
@@ -133,8 +178,9 @@ export const SignUpDoctorScreen: React.FC = () => {
                 <input
                   type="text"
                   required
-                  defaultValue="10101234567"
-                  placeholder="10101234567"
+                  value={licenseNumber}
+                  onChange={(e) => setLicenseNumber(e.target.value)}
+                  placeholder="DZ-DOC-1001"
                   className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
                 />
               </div>
@@ -146,7 +192,8 @@ export const SignUpDoctorScreen: React.FC = () => {
                 <div className="relative">
                   <select
                     required
-                    defaultValue="cardiology"
+                    value={specialization}
+                    onChange={(e) => setSpecialization(e.target.value)}
                     className="w-full appearance-none px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269] cursor-pointer"
                   >
                     <option value="" disabled>Select specialty</option>
@@ -167,7 +214,9 @@ export const SignUpDoctorScreen: React.FC = () => {
               </label>
               <input
                 type="tel"
-                placeholder="+33 6 12 34 56 78"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+213 770 000 001"
                 className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#0d6269]/20 focus:border-[#0d6269]"
               />
             </div>
@@ -190,9 +239,17 @@ export const SignUpDoctorScreen: React.FC = () => {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#004d55] text-white hover:bg-teal-900 shadow-sm transition-colors"
+                disabled={isLoading}
+                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#004d55] text-white hover:bg-teal-900 shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
               >
-                Create doctor account & Enter Workspace
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Creating workspace...</span>
+                  </>
+                ) : (
+                  <span>Create doctor account & Enter Workspace</span>
+                )}
               </button>
             </div>
 

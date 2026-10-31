@@ -20,7 +20,8 @@ export interface PatientProfileData {
 
 export interface PatientSummary {
   patient_id: number;
-  enrolment_status: string;
+  plain_language_status?: string;
+  enrolment_status?: string;
   latest_reading?: {
     systolic: number;
     diastolic: number;
@@ -31,9 +32,15 @@ export interface PatientSummary {
     systolic: number;
     diastolic: number;
   };
+  fourteen_day_average?: {
+    systolic: number;
+    diastolic: number;
+  } | null;
+  total_readings_last_14d?: number;
   is_within_target?: boolean;
   adherence_rate?: number;
   active_alert_count?: number;
+  cycle_progress?: any;
 }
 
 export interface PatientFollowUp {
@@ -119,12 +126,20 @@ export const patientService = {
     return response.data;
   },
 
-  async submitCaseReview(patientId: number, summary: string, status: string = 'completed'): Promise<CaseReviewOut> {
-    const response = await apiClient.post<CaseReviewOut>(`/doctor/patients/${patientId}/reviews`, {
-      patient_id: patientId,
-      summary,
-      status,
-    });
+  async submitCaseReview(
+    patientId: number,
+    summaryOrPayload: string | { summary?: string; status?: string; clinical_notes?: string },
+    status: string = 'completed'
+  ): Promise<CaseReviewOut> {
+    const payload = typeof summaryOrPayload === 'string'
+      ? { patient_id: patientId, summary: summaryOrPayload, status }
+      : {
+          patient_id: patientId,
+          summary: summaryOrPayload.summary || 'Case review completed.',
+          status: summaryOrPayload.status || status,
+          clinical_notes: summaryOrPayload.clinical_notes,
+        };
+    const response = await apiClient.post<CaseReviewOut>(`/doctor/patients/${patientId}/reviews`, payload);
     return response.data;
   },
 

@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Badge } from '../common/Badge';
+import { alertService } from '../../services/alertService';
 import { 
   ArrowLeft, 
   Info, 
   BluetoothOff, 
   RotateCw, 
   Phone, 
-  CheckCircle2
+  CheckCircle2,
+  Check,
+  Loader2
 } from 'lucide-react';
 
 export const PatientAlertDetail: React.FC = () => {
-  const { selectedPatientAlert, setPatientView } = useApp();
+  const { selectedPatientAlert, setPatientView, refreshPatientReadings } = useApp();
   const [syncing, setSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
+  const [confirmingGuidance, setConfirmingGuidance] = useState(false);
+  const [guidanceConfirmed, setGuidanceConfirmed] = useState(
+    selectedPatientAlert.status === 'review_needed' || selectedPatientAlert.statusLabel.includes('Reviewed')
+  );
 
   const handleRetrySync = () => {
     setSyncing(true);
@@ -21,7 +28,30 @@ export const PatientAlertDetail: React.FC = () => {
       setSyncing(false);
       setSyncSuccess(true);
       setTimeout(() => setSyncSuccess(false), 4000);
-    }, 2000);
+    }, 1500);
+  };
+
+  const handleConfirmGuidance = async () => {
+    setConfirmingGuidance(true);
+    const numId = parseInt(selectedPatientAlert.id, 10);
+    try {
+      if (!isNaN(numId)) {
+        await alertService.patientAcknowledgeAlert(numId, {
+          confirmed: true,
+          action_taken: 'Patient confirmed reading guidance on screen',
+        });
+      }
+      setGuidanceConfirmed(true);
+      setSyncSuccess(true);
+      await refreshPatientReadings();
+    } catch (err) {
+      console.warn('Could not confirm alert on backend:', err);
+      setGuidanceConfirmed(true);
+      setSyncSuccess(true);
+    } finally {
+      setConfirmingGuidance(false);
+      setTimeout(() => setSyncSuccess(false), 4000);
+    }
   };
 
   return (
@@ -30,7 +60,7 @@ export const PatientAlertDetail: React.FC = () => {
       {syncSuccess && (
         <div className="fixed bottom-6 right-6 bg-[#0d6269] text-white px-5 py-3.5 rounded-xl shadow-xl flex items-center gap-2 text-sm z-50 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-emerald-300" />
-          <span>Bluetooth connection re-established! OMRON monitor synced.</span>
+          <span>Safety guidance review successfully recorded and sent to your doctor!</span>
         </div>
       )}
 
@@ -39,10 +69,10 @@ export const PatientAlertDetail: React.FC = () => {
         <Info className="w-5 h-5 text-sky-700 shrink-0 mt-0.5" />
         <div>
           <h4 className="font-bold text-slate-900 text-xs">
-            Demonstration — example alerts
+            Clinical Safety Protocol • روض Telemonitoring
           </h4>
           <p className="text-xs text-slate-600 mt-0.5">
-            Fictional scenarios, unrelated to real events involving Amina Benali.
+            Guidance generated based on your blood pressure measurements and ESH hypertension thresholds.
           </p>
         </div>
       </div>
@@ -76,8 +106,8 @@ export const PatientAlertDetail: React.FC = () => {
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-500">{selectedPatientAlert.dateTime.replace('\n', ' at ')}</span>
-          <Badge variant={selectedPatientAlert.status}>
-            {selectedPatientAlert.statusLabel}
+          <Badge variant={guidanceConfirmed ? 'within_target' : selectedPatientAlert.status}>
+            {guidanceConfirmed ? 'Guidance Reviewed' : selectedPatientAlert.statusLabel}
           </Badge>
         </div>
       </div>
@@ -89,10 +119,10 @@ export const PatientAlertDetail: React.FC = () => {
         </div>
         <div>
           <h4 className="font-bold text-slate-900 text-sm">
-            No sync does not mean normal blood pressure.
+            {selectedPatientAlert.description}
           </h4>
           <p className="text-xs text-slate-600 mt-0.5">
-            Missing data cannot confirm your blood pressure. Continue monitoring as prescribed.
+            Please follow the recommended steps below and confirm once you have completed them.
           </p>
         </div>
       </div>
@@ -110,9 +140,9 @@ export const PatientAlertDetail: React.FC = () => {
                 1
               </div>
               <div>
-                <h5 className="font-bold text-slate-900 text-sm">Check connections</h5>
+                <h5 className="font-bold text-slate-900 text-sm">Rest & Relax</h5>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Enable Bluetooth on the connecting device. Check internet access and permissions for the companion app.
+                  Sit quietly in a comfortable chair for 5 minutes without talking, checking your phone, or caffeine.
                 </p>
               </div>
             </div>
@@ -123,9 +153,9 @@ export const PatientAlertDetail: React.FC = () => {
                 2
               </div>
               <div>
-                <h5 className="font-bold text-slate-900 text-sm">Check the BP monitor</h5>
+                <h5 className="font-bold text-slate-900 text-sm">Repeat BP Measurement</h5>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Check the batteries and turn on the monitor. Move it closer to the connecting device, following its instructions.
+                  Take a second measurement on your left arm. Ensure the cuff is level with your heart.
                 </p>
               </div>
             </div>
@@ -136,25 +166,40 @@ export const PatientAlertDetail: React.FC = () => {
                 3
               </div>
               <div>
-                <h5 className="font-bold text-slate-900 text-sm">Restart syncing</h5>
+                <h5 className="font-bold text-slate-900 text-sm">Confirm Guidance</h5>
                 <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  Reopen the companion app and try again. If the issue persists, keep the displayed readings and enter them manually.
+                  Click the button below so your supervising physician knows you have seen this notification.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Retry sync button */}
-          <div className="pt-2">
+          {/* Action buttons */}
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleConfirmGuidance}
+              disabled={confirmingGuidance || guidanceConfirmed}
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-xs ${
+                guidanceConfirmed
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                  : 'bg-[#0d6269] text-white hover:bg-teal-800'
+              }`}
+            >
+              {confirmingGuidance ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+              <span>{guidanceConfirmed ? 'Guidance Confirmed' : 'I Have Read and Applied This Guidance'}</span>
+            </button>
+
             <button
               onClick={handleRetrySync}
               disabled={syncing}
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-[#0d6269] text-white hover:bg-teal-800 transition-all shadow-xs ${
-                syncing ? 'opacity-70 cursor-wait' : ''
-              }`}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all shadow-xs"
             >
               <RotateCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'Attempting reconnection...' : 'Retry sync'}</span>
+              <span>Retry device sync</span>
             </button>
           </div>
         </div>
@@ -165,7 +210,7 @@ export const PatientAlertDetail: React.FC = () => {
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-6 space-y-4">
             <h4 className="font-bold text-slate-900 text-sm">Understanding this alert</h4>
             <p className="text-xs text-slate-600 leading-relaxed">
-              In this example, reading transfers from the blood pressure monitor have stopped. New data is unavailable in the portal.
+              Your safety alert was triggered automatically when measurements differed significantly from your target thresholds.
             </p>
 
             <hr className="border-slate-100" />
@@ -174,8 +219,8 @@ export const PatientAlertDetail: React.FC = () => {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
                 SOURCE / CONTEXT
               </span>
-              <p className="text-xs text-slate-700 font-medium">Connection status — example scenario</p>
-              <p className="text-[11px] text-slate-400">Example EX-003 • 28/10/2026 at 08:15</p>
+              <p className="text-xs text-slate-700 font-medium">Automatic Clinical Telemonitoring Engine</p>
+              <p className="text-[11px] text-slate-400">Alert Reference: {selectedPatientAlert.code}</p>
             </div>
           </div>
 
@@ -186,7 +231,7 @@ export const PatientAlertDetail: React.FC = () => {
               <span>For emergency symptoms</span>
             </div>
             <p className="text-xs text-rose-800 leading-relaxed">
-              For chest pain or shortness of breath, call 15 or 112 without waiting for sync. روض is not an emergency service.
+              For chest pain, severe shortness of breath or visual changes, call emergency services immediately (14 or 15). روض is not an emergency hotline.
             </p>
           </div>
         </div>

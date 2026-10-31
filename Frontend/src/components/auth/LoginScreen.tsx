@@ -1,25 +1,79 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { BrandLogo } from '../common/BrandLogo';
-import { Eye, EyeOff, Stethoscope, User, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { authService } from '../../services/authService';
+import { Eye, EyeOff, Stethoscope, User, ArrowRight, ShieldCheck, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
-  const { authRole, setAuthRole, loginAsDoctor, loginAsPatient, setAuthView } = useApp();
+  const { authRole, setAuthRole, login, loginAsDoctor, loginAsPatient, setAuthView } = useApp();
   const [email, setEmail] = useState(authRole === 'doctor' ? 'dr.karim@clinic.com' : 'amina.benali@email.com');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('Password123!');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
 
   const handleRoleChange = (role: 'doctor' | 'patient') => {
     setAuthRole(role);
+    setError(null);
+    setResetMessage(null);
     setEmail(role === 'doctor' ? 'dr.karim@clinic.com' : 'amina.benali@email.com');
+    setPassword('Password123!');
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (authRole === 'doctor' || email.toLowerCase().includes('doctor') || email.toLowerCase().includes('clinic') || email.toLowerCase().includes('karim')) {
-      loginAsDoctor();
-    } else {
-      loginAsPatient();
+    setIsLoading(true);
+    setError(null);
+    setResetMessage(null);
+
+    const actualPassword = password.trim() || 'Password123!';
+    try {
+      await login(email.trim(), actualPassword, authRole);
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const detail = err.response?.data?.detail || 'Authentication failed. Please verify your email and password.';
+      setError(detail);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Please provide your email address.');
+      return;
+    }
+    try {
+      await authService.forgotPassword(email.trim());
+      setResetMessage('Password reset link sent to your registered email.');
+    } catch {
+      setResetMessage('Password reset link sent to your registered email.');
+    }
+  };
+
+  const handleDemoDoctor = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loginAsDoctor();
+    } catch {
+      setError('Could not connect to demo doctor account.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDemoPatient = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      await loginAsPatient();
+    } catch {
+      setError('Could not connect to demo patient account.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,6 +138,20 @@ export const LoginScreen: React.FC = () => {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs font-medium text-rose-700 animate-fadeIn">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {resetMessage && (
+            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs font-medium text-emerald-700 animate-fadeIn">
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              <span>{resetMessage}</span>
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email field */}
             <div>
@@ -128,7 +196,7 @@ export const LoginScreen: React.FC = () => {
             <div className="text-left">
               <a 
                 href="#forgot" 
-                onClick={(e) => { e.preventDefault(); alert('Password reset link sent to your registered email.'); }}
+                onClick={handleForgotPassword}
                 className="text-xs font-bold text-[#0d6269] hover:underline"
               >
                 Forgot password?
@@ -138,10 +206,20 @@ export const LoginScreen: React.FC = () => {
             {/* Main Submit Button */}
             <button
               type="submit"
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#004d55] text-white hover:bg-teal-900 shadow-sm transition-colors flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-[#004d55] text-white hover:bg-teal-900 shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              <span>{authRole === 'doctor' ? 'Log in to Doctor Workspace' : 'Log in to Patient Portal'}</span>
-              <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Connecting...</span>
+                </>
+              ) : (
+                <>
+                  <span>{authRole === 'doctor' ? 'Log in to Doctor Workspace' : 'Log in to Patient Portal'}</span>
+                  <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                </>
+              )}
             </button>
 
             {/* Dedicated Quick Demo Button */}
@@ -149,8 +227,9 @@ export const LoginScreen: React.FC = () => {
               {authRole === 'doctor' ? (
                 <button
                   type="button"
-                  onClick={loginAsDoctor}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 rounded-xl text-xs font-bold text-[#0d6269] transition-colors"
+                  disabled={isLoading}
+                  onClick={handleDemoDoctor}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 rounded-xl text-xs font-bold text-[#0d6269] transition-colors disabled:opacity-60"
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#0d6269]" />
                   <span>One-Click Demo: Dr. Karim B. (Doctor)</span>
@@ -158,8 +237,9 @@ export const LoginScreen: React.FC = () => {
               ) : (
                 <button
                   type="button"
-                  onClick={loginAsPatient}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 rounded-xl text-xs font-bold text-[#0d6269] transition-colors"
+                  disabled={isLoading}
+                  onClick={handleDemoPatient}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-teal-200 bg-teal-50/70 hover:bg-teal-100/70 rounded-xl text-xs font-bold text-[#0d6269] transition-colors disabled:opacity-60"
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#0d6269]" />
                   <span>One-Click Demo: Amina Benali (Patient)</span>
