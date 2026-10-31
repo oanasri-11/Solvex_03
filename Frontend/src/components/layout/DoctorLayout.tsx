@@ -8,7 +8,7 @@ interface DoctorLayoutProps {
 }
 
 export const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
-  const { doctorView, setDoctorView, selectedPatient, logout } = useApp();
+  const { doctorView, setDoctorView, selectedPatient, logout, currentUser } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getBreadcrumb = () => {
@@ -139,10 +139,10 @@ export const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#e0f2f1] text-[#0d6269] font-bold text-xs flex items-center justify-center shrink-0">
-                KB
+                {currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'DR'}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">Dr. Karim B.</p>
+                <p className="text-xs font-bold text-slate-800 truncate">{currentUser?.full_name || 'Doctor'}</p>
                 <p className="text-[10px] text-slate-400 truncate">Cardiologist</p>
               </div>
             </div>
@@ -177,11 +177,11 @@ export const DoctorLayout: React.FC<DoctorLayoutProps> = ({ children }) => {
           {/* User profile & quick exit */}
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <h4 className="text-sm font-bold text-slate-900 leading-tight">Dr. Karim B.</h4>
+              <h4 className="text-sm font-bold text-slate-900 leading-tight">{currentUser?.full_name || 'Doctor'}</h4>
               <p className="text-xs text-slate-500">Consultant Cardiologist</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-[#e0f2f1] text-[#0d6269] font-bold text-sm flex items-center justify-center border border-teal-100 shadow-sm">
-              KB
+              {currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'DR'}
             </div>
             <button
               onClick={logout}

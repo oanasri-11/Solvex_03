@@ -3,27 +3,28 @@ import { useApp } from '../../context/AppContext';
 import { Badge } from '../common/Badge';
 import { deviceService, type ConnectedDeviceOut } from '../../services/deviceService';
 import { patientService, type PatientFollowUp } from '../../services/patientService';
-import { 
-  Eye, 
-  Check, 
-  Languages, 
-  Activity, 
-  ArrowLeftRight, 
-  Stethoscope, 
-  CheckCircle, 
-  Info, 
-  Bluetooth, 
-  Plus, 
-  SlidersHorizontal, 
-  ShieldCheck, 
-  CloudCheck, 
-  FileDown, 
+import {
+  Eye,
+  Check,
+  Languages,
+  Activity,
+  ArrowLeftRight,
+  Stethoscope,
+  CheckCircle,
+  Info,
+  Bluetooth,
+  Plus,
+  SlidersHorizontal,
+  ShieldCheck,
+  CloudCheck,
+  FileDown,
   Save,
   CheckCircle2,
   Lock,
   Battery,
   RotateCw,
-  Loader2
+  Loader2,
+  Users
 } from 'lucide-react';
 
 export const PatientSettings: React.FC = () => {
@@ -374,7 +375,7 @@ export const PatientSettings: React.FC = () => {
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <RotateCw className="w-3.5 h-3.5 text-slate-400" />
-                      Paired: {new Date(dev.paired_at).toLocaleDateString()}
+                      Paired: {dev.paired_at ? new Date(dev.paired_at).toLocaleDateString() : 'Unknown'}
                     </span>
                   </div>
                 </div>
@@ -387,9 +388,9 @@ export const PatientSettings: React.FC = () => {
                   className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
                 >
                   <SlidersHorizontal className={`w-3.5 h-3.5 ${testingSignal ? 'animate-spin' : ''}`} />
-                  <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: 98% (Good)' : 'Test signal'}</span>
+                  <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: Good' : 'Test signal'}</span>
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     deviceService.unpairDevice(dev.id).then(() => {
                       setDevices(prev => prev.filter(d => d.id !== dev.id));
@@ -403,42 +404,31 @@ export const PatientSettings: React.FC = () => {
             </div>
           ))
         ) : (
-          <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-start gap-4">
-              <div className="w-16 h-12 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 p-2 shadow-xs">
-                <Activity className="w-7 h-7 text-[#0d6269]" />
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-slate-900 text-sm">OMRON HEM-7361T-EBK</h4>
-                  <Badge variant="within_target">Connected</Badge>
-                </div>
-                <p className="text-xs text-slate-500">Standalone integrated cuff • Secure Bluetooth pairing</p>
-                <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Battery className="w-3.5 h-3.5 text-emerald-600" />
-                    Battery: 85%
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <RotateCw className="w-3.5 h-3.5 text-slate-400" />
-                    Synced today
-                  </span>
-                </div>
-              </div>
+          <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-6 text-center">
+            <div className="w-16 h-16 bg-white rounded-full border border-slate-200 flex items-center justify-center mx-auto mb-4 shadow-xs">
+              <Activity className="w-8 h-8 text-[#0d6269]" />
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleTestSignal}
-                disabled={testingSignal}
-                className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs"
-              >
-                <SlidersHorizontal className={`w-3.5 h-3.5 ${testingSignal ? 'animate-spin' : ''}`} />
-                <span>{testingSignal ? 'Testing...' : signalTested ? 'Signal: 98% (Good)' : 'Test signal'}</span>
-              </button>
-            </div>
+            <h4 className="font-bold text-slate-900 text-sm mb-2">No devices connected</h4>
+            <p className="text-xs text-slate-500 mb-4 max-w-xs mx-auto">
+              Pair a clinically validated Bluetooth blood pressure monitor to automatically sync your readings.
+            </p>
+            <button
+              onClick={() => {
+                deviceService.pairDevice({
+                  device_model: 'OMRON HEM-7361T-EBK (Bluetooth Smart)',
+                  serial_number: `OM-${Date.now().toString().slice(-6)}`,
+                  validation_status: 'stride_bp_validated',
+                }).then(newDev => {
+                  setDevices(prev => [...prev, newDev]);
+                  setSaveSuccess(true);
+                  setTimeout(() => setSaveSuccess(false), 3000);
+                });
+              }}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#0d6269] text-white text-xs font-bold rounded-xl hover:bg-teal-800 transition-colors shadow-xs mx-auto"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Pair BLE BP Monitor</span>
+            </button>
           </div>
         )}
       </div>
@@ -455,27 +445,27 @@ export const PatientSettings: React.FC = () => {
           </div>
         </div>
 
-        {/* Caregiver sub card */}
+        {/* Caregiver section */}
         <div className="bg-[#f8fafc] border border-slate-200/70 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-sky-100 text-sky-800 font-bold text-xs flex items-center justify-center">
-                KB
+              <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 font-bold text-xs flex items-center justify-center">
+                <Users className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-sm">Karim Benali (Son)</h4>
-                <p className="text-xs text-slate-500">Designated caregiver access • Read-only</p>
+                <h4 className="font-bold text-slate-900 text-sm">No caregivers linked</h4>
+                <p className="text-xs text-slate-500">Add a trusted person to receive weekly summaries and alerts.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Badge variant="within_target">Access enabled</Badge>
-              <button className="text-xs font-semibold text-[#0d6269] hover:underline">Edit</button>
-            </div>
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-xs">
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add caregiver</span>
+            </button>
           </div>
 
           <p className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-200/60">
-            Karim receives a secure weekly summary and a discreet notification only when your blood pressure needs attention. He cannot change your treatment or prescriptions.
+            Linked caregivers receive a secure weekly summary and discreet notifications only when your blood pressure needs attention. They cannot change your treatment or prescriptions.
           </p>
         </div>
 

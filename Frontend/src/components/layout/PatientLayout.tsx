@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { BrandLogo } from '../common/BrandLogo';
-import { 
-  Calendar, 
-  PlusCircle, 
-  Clock, 
-  Settings, 
-  Bell, 
-  User, 
-  Menu, 
+import {
+  Calendar,
+  PlusCircle,
+  Clock,
+  Settings,
+  Bell,
+  Menu,
   X,
   LogOut,
   ShieldCheck
@@ -19,7 +18,7 @@ interface PatientLayoutProps {
 }
 
 export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
-  const { patientView, setPatientView, settings, updateSettings, logout } = useApp();
+  const { patientView, setPatientView, settings, updateSettings, logout, currentUser, doctorName } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -96,18 +95,18 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
               <ShieldCheck className="w-4 h-4 text-[#0d6269]" />
               <span>روض Telemonitoring Active</span>
             </div>
-            <p className="text-[11px] text-teal-800/80 mt-1">Synced with Dr. Philippe Laurent</p>
+            <p className="text-[11px] text-teal-800/80 mt-1">Synced with {doctorName}</p>
           </div>
 
           {/* User info card with logout button */}
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-[#004d55] text-white flex items-center justify-center shrink-0">
-                <User className="w-4 h-4" />
+                {currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PB'}
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">Amina Benali</p>
-                <p className="text-[10px] text-slate-400 truncate">#TC-4819</p>
+                <p className="text-xs font-bold text-slate-800 truncate">{currentUser?.full_name || 'Patient'}</p>
+                <p className="text-[10px] text-slate-400 truncate">#TC-{currentUser?.id || '0000'}</p>
               </div>
             </div>
 
@@ -133,7 +132,7 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h2 className="text-base font-semibold text-slate-800">Hello, Amina</h2>
+            <h2 className="text-base font-semibold text-slate-800">Hello, {currentUser?.full_name?.split(' ')[0] || 'Patient'}</h2>
           </div>
 
           {/* Controls: Language toggle + Bell + User */}
@@ -143,8 +142,8 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
               <button
                 onClick={() => updateSettings({ language: 'en' })}
                 className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
-                  settings.language === 'en' 
-                    ? 'bg-[#0d6269] text-white shadow-xs' 
+                  settings.language === 'en'
+                    ? 'bg-[#0d6269] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -153,8 +152,8 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
               <button
                 onClick={() => updateSettings({ language: 'ar' })}
                 className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
-                  settings.language === 'ar' 
-                    ? 'bg-[#0d6269] text-white shadow-xs' 
+                  settings.language === 'ar'
+                    ? 'bg-[#0d6269] text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -171,11 +170,11 @@ export const PatientLayout: React.FC<PatientLayoutProps> = ({ children }) => {
             {/* Patient profile */}
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <h4 className="text-sm font-bold text-slate-900 leading-tight">Amina Benali</h4>
-                <p className="text-xs text-slate-500">Patient ID: #TC-4819</p>
+                <h4 className="text-sm font-bold text-slate-900 leading-tight">{currentUser?.full_name || 'Patient'}</h4>
+                <p className="text-xs text-slate-500">Patient ID: #TC-{currentUser?.id || '0000'}</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-[#004d55] text-white flex items-center justify-center shadow-xs">
-                <User className="w-5 h-5" />
+                {currentUser?.full_name ? currentUser.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'PB'}
               </div>
             </div>
 

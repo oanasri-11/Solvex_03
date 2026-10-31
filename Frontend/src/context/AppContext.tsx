@@ -62,10 +62,11 @@ import { doctorService } from '../services/doctorService';
 import { alertService } from '../services/alertService';
 import { readingService } from '../services/readingService';
 import { userService } from '../services/userService';
-import { 
-  mapBackendPriorityQueueItemToPatient, 
-  mapBackendReadingToBPReading, 
-  mapBackendAlertToDoctorAlert, 
+import { patientService } from '../services/patientService';
+import {
+  mapBackendPriorityQueueItemToPatient,
+  mapBackendReadingToBPReading,
+  mapBackendAlertToDoctorAlert,
   mapBackendAlertToPatientAlert,
   mapBackendSettingsToFrontend,
   mapFrontendSettingsToBackend
@@ -84,7 +85,7 @@ interface AppContextType {
   setDoctorView: (view: DoctorView) => void;
   patientView: PatientView;
   setPatientView: (view: PatientView) => void;
-  
+
   // Auth & Session
   currentUser: UserMe | null;
   isAuthenticated: boolean;
@@ -114,6 +115,11 @@ interface AppContextType {
   aminaReadings: BPReading[];
   addAminaReading: (reading: Omit<BPReading, 'id'>) => Promise<void>;
   marcDpuisReadings: BPReading[];
+
+  // Patient-specific data
+  patientSummary: any;
+  doctorName: string;
+  doctorSpeciality: string;
 
   settings: SettingsState;
   updateSettings: (newSettings: Partial<SettingsState>) => void;
@@ -156,6 +162,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [aminaReadings, setAminaReadings] = useState<BPReading[]>([]);
   const [marcDpuisReadings] = useState<BPReading[]>([]);
+
+  // Patient-specific data
+  const [patientSummary, setPatientSummary] = useState<any>(null);
+  const [doctorName, setDoctorName] = useState<string>('Doctor');
+  const [doctorSpeciality, setDoctorSpeciality] = useState<string>('Telemonitoring');
 
   const [settings, setSettings] = useState<SettingsState>({
     textSize: 'large',
@@ -238,6 +249,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     } catch (err) {
       console.warn('Could not fetch patient alerts from backend:', err);
+    }
+
+    // Fetch patient summary (includes target, latest reading, stats)
+    try {
+      const summaryRes = await patientService.getOwnSummary();
+      if (summaryRes) {
+        setPatientSummary(summaryRes);
+      }
+    } catch (err) {
+      console.warn('Could not fetch patient summary from backend:', err);
+    }
+
+    // Fetch doctor info from follow-up
+    try {
+      const followUpRes = await patientService.getOwnFollowUp();
+      if (followUpRes?.assigned_doctor) {
+        setDoctorName(followUpRes.assigned_doctor.name || 'Doctor');
+        setDoctorSpeciality(followUpRes.assigned_doctor.speciality || 'Telemonitoring');
+      }
+    } catch (err) {
+      console.warn('Could not fetch doctor info from backend:', err);
     }
   }, []);
 
@@ -473,6 +505,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         aminaReadings,
         addAminaReading,
         marcDpuisReadings,
+        patientSummary,
+        doctorName,
+        doctorSpeciality,
         settings,
         updateSettings,
         refreshDoctorCohort,
